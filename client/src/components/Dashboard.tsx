@@ -5,7 +5,7 @@ import type { UserProfile, TDEEResult, UnitPreference } from '../types/user';
 import { ProfileStatsModal } from './ProfileStatsModal';
 import { OnboardingModal } from './OnboardingModal';
 import { TDEECalculatorView } from './TDEECalculatorView';
-import { FooterDisclaimer } from './FooterDisclaimer';
+import { FeatureRoadmapCard } from './FeatureRoadmapCard';
 import { cmToFeetInches, kgToLbs } from '../utils/units';
 import { Settings2, User, Loader2, CheckCircle2 } from 'lucide-react';
 import type { GuestMetrics } from './LiveTDEECalculator';
@@ -150,17 +150,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>Calibrating your personal metabolic blueprint...</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          {/* TDEE & 9 Presets Matrix & Weight Forecast */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          {/* Member Features & Roadmap Card */}
+          <FeatureRoadmapCard />
+
+          {/* TDEE & Macro Targets Matrix & Weight Forecast */}
           <TDEECalculatorView
             tdeeResult={tdeeResult}
             weightKg={profile?.weightKg ?? 78}
             unitPreference={unitPreference}
             onOpenSettings={() => setIsStatsModalOpen(true)}
           />
-
-          {/* Professional Medical & Dietary Disclaimer */}
-          <FooterDisclaimer />
         </div>
       )}
 
