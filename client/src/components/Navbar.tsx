@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { UnitNotch } from './UnitNotch';
 import type { UnitPreference } from '../types/user';
-import { Dumbbell, LogIn, LogOut, Settings2, UserPlus, User, Sun, Moon } from 'lucide-react';
+import { LogIn, LogOut, Settings2, UserPlus, User, Sun, Moon } from 'lucide-react';
 
 interface NavbarProps {
   unitPreference: UnitPreference;
@@ -51,22 +51,27 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <div
             style={{
-              background: 'var(--accent-gradient)',
-              padding: '6px',
+              background: 'var(--bg-surface)',
+              border: '1.5px solid var(--border-light)',
+              padding: '4px 5px',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff',
-              boxShadow: 'var(--accent-glow)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
-            <Dumbbell size={18} />
+            <img
+              src="/mascot.png"
+              alt="Mascot Logo"
+              className="mascot-img"
+              style={{ width: '22px', height: '22px' }}
+            />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '16px', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>MacroApp</span>
-              <span className="navbar-badge-desktop badge" style={{ fontSize: '9px', padding: '1px 5px' }}>Phase 1</span>
+              <span style={{ fontSize: '16px', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>Macros</span>
+              <span className="navbar-badge-desktop badge" style={{ fontSize: '9px', padding: '1px 5px' }}>TDEE Calc</span>
             </div>
             <p className="navbar-brand-subtitle" style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Metabolic Engine</p>
           </div>
