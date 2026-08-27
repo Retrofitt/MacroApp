@@ -31,7 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         zIndex: 40,
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        backgroundColor: 'rgba(255, 255, 255, 0.88)',
+        backgroundColor: 'var(--bg-header)',
         borderBottom: '1px solid var(--border-light)',
         width: '100%',
       }}

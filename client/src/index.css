@@ -8,6 +8,7 @@
   --bg-card: #ffffff;          /* White card surface */
   --bg-card-hover: #f8fafc;
   --bg-input: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.88);
   --bg-modal-backdrop: rgba(15, 23, 42, 0.45);
 
   --text-main: #0f172a;        /* Slate Black Typography */
@@ -46,40 +47,41 @@
 }
 
 [data-theme="dark"] {
-  /* Dark Mode Palette */
-  --bg-primary: #090d16;
-  --bg-surface: #111827;
-  --bg-secondary: #1f2937;
-  --bg-card: rgba(17, 24, 39, 0.88);
-  --bg-card-hover: rgba(31, 41, 55, 0.95);
-  --bg-input: rgba(0, 0, 0, 0.35);
-  --bg-modal-backdrop: rgba(0, 0, 0, 0.8);
+  /* Nordic Forest Obsidian Theme (Inspired by #1f1f1f & #222825) */
+  --bg-primary: #161a18;       /* Deep obsidian canvas with forest undertone */
+  --bg-surface: #222825;       /* Elevated dark forest slate card */
+  --bg-secondary: #1c211e;     /* Recessed wells and subtle controls */
+  --bg-card: #222825;
+  --bg-card-hover: #29302c;
+  --bg-input: #191d1b;
+  --bg-header: rgba(22, 26, 24, 0.88);
+  --bg-modal-backdrop: rgba(10, 13, 11, 0.82);
 
-  --text-main: #f9fafb;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-main: #f3f6f4;        /* Clean porcelain typography */
+  --text-primary: #f3f6f4;
+  --text-secondary: #a3b0a8;   /* Muted sage gray */
+  --text-muted: #728078;       /* Subdued forest slate for subtitles */
 
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(16, 185, 129, 0.45);
+  --border-light: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-active: #10b981;
 
-  --color-accent: #10b981;
+  --color-accent: #10b981;     /* Vivid Emerald */
   --color-warning: #f87171;
   --accent-emerald: #10b981;
-  --accent-cyan: #38bdf8;
-  --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
-  --accent-glow: 0 0 25px rgba(16, 185, 129, 0.3);
+  --accent-cyan: #34d399;
+  --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --accent-glow: 0 0 25px rgba(16, 185, 129, 0.28);
 
-  --macro-protein: #38bdf8;
-  --macro-carbs: #fbbf24;
-  --macro-fats: #f472b6;
+  --macro-protein: #38bdf8;    /* Luminous Frost Blue */
+  --macro-carbs: #fbbf24;      /* Amber Gold */
+  --macro-fats: #f472b6;       /* Rose Pink */
 
   --danger-bg: rgba(239, 68, 68, 0.15);
   --danger-border: rgba(239, 68, 68, 0.3);
   --danger-text: #f87171;
 
-  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
 }
 
 * {

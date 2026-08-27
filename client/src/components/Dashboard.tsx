@@ -102,7 +102,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div
             style={{
-              background: '#ffffff',
+              background: 'var(--bg-surface)',
               padding: '14px',
               borderRadius: 'var(--radius-full)',
               border: '1px solid var(--border-light)',
