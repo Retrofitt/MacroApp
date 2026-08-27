@@ -184,7 +184,7 @@ export const calculateWeightForecast = (
 
   const rateDescription =
     weeklyRate === 0
-      ? 'Weight Stable (0.0 / week)'
+      ? 'Weight Stable (±0.0 / wk)'
       : `${weeklyRate > 0 ? '+' : ''}${weeklyRate.toFixed(2)} ${unitLabel} / week`;
 
   // Target Goal Calculator
@@ -208,9 +208,14 @@ export const calculateWeightForecast = (
         isFeasible: true,
       };
     } else {
+      const helpfulHint =
+        deltaNeeded < 0
+          ? 'Switch goal to Cutting to calculate weight loss'
+          : 'Switch goal to Bulking to calculate weight gain';
+
       targetGoalForecast = {
         weeksNeeded: 0,
-        estimatedDate: 'Goal direction opposite of current calorie trajectory',
+        estimatedDate: helpfulHint,
         isFeasible: false,
       };
     }

@@ -180,7 +180,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
             Calculate Your Total Daily Energy Expenditure (TDEE)
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: '1.5' }}>
-            Adjust your personal metrics in real time. We calculate your exact BMR, generate 9 calibrated macro presets, and estimate your weight loss or gain timeline.
+            Calculate your exact daily calorie burn, preview customized macro targets, and forecast your weight timeline in real time.
           </p>
         </div>
 
@@ -211,7 +211,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
             </div>
             <div>
               <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>Your Body Metrics</h2>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Updates calculation instantly</p>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Calculations update instantly</p>
             </div>
           </div>
 
@@ -430,7 +430,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               {showAdvanced && (
                 <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--bg-primary)', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    Estimate body fat via <strong>US Navy Tape Equation</strong>:
+                    Measure your neck & waist to estimate your body fat % (US Navy equation):
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: sex === 'female' ? '1fr 1fr 1fr' : '1fr 1fr', gap: '6px' }}>
@@ -494,7 +494,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               )}
             </div>
 
-            {/* Formula Status Indicator */}
+            {/* Formula Status Callout */}
             <div
               style={{
                 padding: '8px 12px',
@@ -511,8 +511,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               <Sparkles size={14} style={{ color: 'var(--macro-protein)', flexShrink: 0 }} />
               <span>
                 {tdeeResult.formulaUsed === 'katch_mcardle'
-                  ? 'Katch-McArdle Formula active (Lean Body Mass).'
-                  : 'Mifflin-St Jeor Formula active (Standard Baseline).'}
+                  ? '⚡ Katch-McArdle Formula active (calibrated with Lean Body Mass).'
+                  : '✨ Mifflin-St Jeor Formula active (standard metabolic baseline).'}
               </span>
             </div>
           </div>
@@ -533,7 +533,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                 {tdeeResult.bmr} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>
               </div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Calories at complete rest
+                Calories burned at complete rest
               </div>
             </div>
 
@@ -548,7 +548,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                 {tdeeResult.tdee} <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>
               </div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Includes activity multiplier
+                Total daily calories to maintain weight
               </div>
             </div>
 

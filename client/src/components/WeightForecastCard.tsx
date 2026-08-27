@@ -35,6 +35,12 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
   const isGain = dailyCalorieDifference > 0;
   const isMaintenance = dailyCalorieDifference === 0;
 
+  const goalSubtitle = isMaintenance
+    ? 'Calorie target calibrated to maintain your current weight.'
+    : isLoss
+    ? `Estimated fat loss pace at a deficit of ${Math.abs(dailyCalorieDifference)} kcal/day.`
+    : `Estimated lean muscle growth pace at a surplus of ${dailyCalorieDifference} kcal/day.`;
+
   return (
     <div
       className="glass-card responsive-card-padding"
@@ -47,7 +53,7 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h3 style={{ fontSize: '17px', fontWeight: '800', color: 'var(--text-main)' }}>
-              Weight Change & Timeline Forecast
+              Weight Trajectory & Timeline Forecast
             </h3>
             <span
               className="badge"
@@ -62,7 +68,7 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
-            Based on a daily {isLoss ? 'deficit' : isGain ? 'surplus' : 'balance'} of {Math.abs(dailyCalorieDifference)} kcal/day (3,500 kcal $\approx$ 1 lb tissue)
+            {goalSubtitle}
           </p>
         </div>
       </div>
@@ -90,7 +96,7 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
             </div>
 
             <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
-              {isMaintenance ? 'Stable' : milestone.projectedWeightDisplay}
+              {milestone.projectedWeightDisplay}
             </div>
 
             <div
@@ -100,7 +106,7 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
                 color: isLoss ? '#059669' : isGain ? 'var(--macro-protein)' : 'var(--text-muted)',
               }}
             >
-              {isMaintenance ? '± 0.0 change' : `${milestone.totalChangeDisplay} from today`}
+              {isMaintenance ? 'Maintains current weight' : `${milestone.totalChangeDisplay} total change`}
             </div>
           </div>
         ))}
@@ -112,12 +118,12 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
           background: 'var(--bg-primary)',
           border: '1px solid var(--border-light)',
           borderRadius: 'var(--radius-md)',
-          padding: '16px 20px',
+          padding: '14px 18px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '16px',
+          gap: '14px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -125,34 +131,34 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
             style={{
               background: 'var(--bg-surface)',
               border: '1px solid var(--border-light)',
-              padding: '10px',
+              padding: '9px',
               borderRadius: '10px',
               display: 'flex',
               color: 'var(--color-accent)',
             }}
           >
-            <Target size={20} />
+            <Target size={18} />
           </div>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>
-              Target Goal Weight Estimator
+            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+              Goal Weight Timeline
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Enter your target weight to calculate estimated date of arrival
+              Enter your target weight to calculate your estimated completion date
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ width: '130px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ width: '120px' }}>
             <input
               type="number"
               step="0.5"
-              placeholder={`e.g. ${isImperial ? '175' : '75'}`}
+              placeholder={`e.g. ${isImperial ? '165' : '75'}`}
               value={targetWeightInput}
               onChange={(e) => setTargetWeightInput(e.target.value)}
               className="input-field"
-              style={{ padding: '8px 12px', fontSize: '13px' }}
+              style={{ padding: '7px 10px', fontSize: '13px' }}
             />
           </div>
 
@@ -161,26 +167,26 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
+                gap: '6px',
+                padding: '7px 12px',
                 borderRadius: 'var(--radius-md)',
                 background: forecast.targetGoalForecast.isFeasible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                 border: forecast.targetGoalForecast.isFeasible ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
-                fontSize: '13px',
+                fontSize: '12px',
                 fontWeight: '600',
                 color: forecast.targetGoalForecast.isFeasible ? '#059669' : 'var(--danger-text)',
               }}
             >
               {forecast.targetGoalForecast.isFeasible ? (
                 <>
-                  <Clock size={16} />
+                  <Clock size={15} />
                   <span>
-                    ~{forecast.targetGoalForecast.weeksNeeded} Weeks (Arrive: {forecast.targetGoalForecast.estimatedDate})
+                    ~{forecast.targetGoalForecast.weeksNeeded} Weeks (Target: {forecast.targetGoalForecast.estimatedDate})
                   </span>
                 </>
               ) : (
                 <>
-                  <AlertCircle size={16} />
+                  <AlertCircle size={15} />
                   <span>{forecast.targetGoalForecast.estimatedDate}</span>
                 </>
               )}

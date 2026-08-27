@@ -41,7 +41,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
             {tdeeResult.bmr} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>
           </div>
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            Formula: {tdeeResult.formulaUsed === 'katch_mcardle' ? 'Katch-McArdle' : 'Mifflin-St Jeor'}
+            Calories burned at complete rest
           </div>
         </div>
 
@@ -56,7 +56,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
             {tdeeResult.tdee} <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>
           </div>
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            Includes activity multiplier
+            Total daily calories to maintain weight
           </div>
         </div>
 
@@ -82,9 +82,9 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
       <div className="glass-card responsive-card-padding">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Optimal Macro Presets (9 Varieties)</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Optimal Macro Targets (9 Varieties)</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-              Scientifically calibrated for muscle preservation and metabolic health
+              Calibrated to protect lean muscle mass & optimize energy
             </p>
           </div>
 
