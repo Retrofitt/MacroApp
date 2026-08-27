@@ -1,6 +1,6 @@
 import type { ApiResponse, AuthSuccessData, LoginCredentials, RegisterCredentials, SafeUser } from '../types/auth';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const defaultHeaders: HeadersInit = {

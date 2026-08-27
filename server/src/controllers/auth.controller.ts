@@ -21,7 +21,7 @@ const createToken = (payload: AuthTokenPayload): string => {
 };
 
 const setTokenCookie = (res: Response, token: string): void => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
   res.cookie('token', token, {
     httpOnly: true,
     secure: isProduction,
@@ -151,7 +151,7 @@ export const logout = (
   _req: Request,
   res: Response<ApiResponse<null>>
 ): void => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
   res.clearCookie('token', {
     httpOnly: true,
     secure: isProduction,

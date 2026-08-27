@@ -1,7 +1,7 @@
 import type { ApiResponse } from '../types/auth';
 import type { TDEEResult, UserProfile } from '../types/user';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 export const userService = {
   getProfile: async (): Promise<ApiResponse<{ profile: UserProfile; tdeeResult: TDEEResult }>> => {
