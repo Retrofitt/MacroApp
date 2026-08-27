@@ -573,7 +573,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
           {/* 9-Preset Interactive Matrix */}
           <div className="glass-card responsive-card-padding">
             <div style={{ marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Optimal Macro Targets (9 Varieties)</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Macro Targets</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
                 Calibrated to protect lean muscle mass & optimize hormone health
               </p>

@@ -82,7 +82,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
       <div className="glass-card responsive-card-padding">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Optimal Macro Targets (9 Varieties)</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Macro Targets</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
               Calibrated to protect lean muscle mass & optimize energy
             </p>
