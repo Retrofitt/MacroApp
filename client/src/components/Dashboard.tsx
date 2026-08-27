@@ -6,6 +6,7 @@ import { ProfileStatsModal } from './ProfileStatsModal';
 import { OnboardingModal } from './OnboardingModal';
 import { TDEECalculatorView } from './TDEECalculatorView';
 import { FeatureRoadmapCard } from './FeatureRoadmapCard';
+import { FooterDisclaimer } from './FooterDisclaimer';
 import { cmToFeetInches, kgToLbs } from '../utils/units';
 import { Settings2, User, Loader2, CheckCircle2 } from 'lucide-react';
 import type { GuestMetrics } from './LiveTDEECalculator';
@@ -161,6 +162,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             unitPreference={unitPreference}
             onOpenSettings={() => setIsStatsModalOpen(true)}
           />
+
+          {/* Professional Medical & Dietary Disclaimer + Copyright */}
+          <FooterDisclaimer />
         </div>
       )}
 
