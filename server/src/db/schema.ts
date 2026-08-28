@@ -2,7 +2,6 @@ import { d1 } from './d1.js';
 
 /**
  * Cloudflare D1 SQL Schema Definitions
- * Add new table definitions, columns, or indexes here for future phases.
  */
 export const SCHEMAS = {
   users: `
@@ -25,29 +24,46 @@ export const SCHEMAS = {
       body_fat_percentage REAL,
       activity_level TEXT NOT NULL DEFAULT 'moderately_active',
       unit_preference TEXT NOT NULL DEFAULT 'imperial',
+      theme_preference TEXT NOT NULL DEFAULT 'light',
+      selected_goal TEXT NOT NULL DEFAULT 'maintenance',
+      target_goal_weight REAL,
       is_setup_complete INTEGER NOT NULL DEFAULT 0,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
   `,
-  // Future Phase Schemas can be added here cleanly:
-  // foodLogs: `CREATE TABLE IF NOT EXISTS food_logs (...);`,
-  // weightHistory: `CREATE TABLE IF NOT EXISTS weight_history (...);`,
 };
+
+export const SCHEMA_MIGRATIONS = [
+  `ALTER TABLE user_profiles ADD COLUMN theme_preference TEXT NOT NULL DEFAULT 'light';`,
+  `ALTER TABLE user_profiles ADD COLUMN selected_goal TEXT NOT NULL DEFAULT 'maintenance';`,
+  `ALTER TABLE user_profiles ADD COLUMN target_goal_weight REAL;`,
+];
 
 let isSchemaSynchronized = false;
 
 /**
  * Self-healing schema engine.
- * Automatically verifies and provisions missing tables on first query.
+ * Automatically verifies tables and runs incremental column additions.
  */
 export const ensureDatabaseSchema = async (force: boolean = false): Promise<void> => {
   if ((isSchemaSynchronized && !force) || !d1.isConfigured()) return;
 
   try {
-    for (const [tableName, sql] of Object.entries(SCHEMAS)) {
+    // 1. Create missing base tables
+    for (const [, sql] of Object.entries(SCHEMAS)) {
       await d1.execute(sql);
     }
+
+    // 2. Safely apply column expansions if migrating existing tables
+    for (const sql of SCHEMA_MIGRATIONS) {
+      try {
+        await d1.execute(sql);
+      } catch {
+        // Ignored if column already exists in SQLite
+      }
+    }
+
     isSchemaSynchronized = true;
   } catch (error) {
     console.error('Self-healing schema initialization failed:', error);

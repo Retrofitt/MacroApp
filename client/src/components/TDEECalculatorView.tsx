@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import type { TDEEResult, GoalMacroPreset, MacroBreakdown, UnitPreference } from '../types/user';
+import React, { useState, useEffect } from 'react';
+import type {
+  TDEEResult,
+  GoalMacroPreset,
+  MacroBreakdown,
+  UnitPreference,
+  SelectedGoal,
+} from '../types/user';
 import { WeightForecastCard } from './WeightForecastCard';
 import { Flame, Activity, Zap, TrendingDown, Target, TrendingUp } from 'lucide-react';
 
@@ -7,6 +13,10 @@ interface TDEECalculatorViewProps {
   tdeeResult: TDEEResult | null;
   weightKg?: number;
   unitPreference?: UnitPreference;
+  initialSelectedGoal?: SelectedGoal;
+  initialTargetWeight?: number | null;
+  onGoalChange?: (goal: SelectedGoal) => void;
+  onTargetWeightChange?: (targetWeight: number | null) => void;
   onOpenSettings: () => void;
 }
 
@@ -14,10 +24,25 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
   tdeeResult,
   weightKg = 78,
   unitPreference = 'imperial',
+  initialSelectedGoal = 'maintenance',
+  initialTargetWeight,
+  onGoalChange,
+  onTargetWeightChange,
   onOpenSettings,
 }) => {
-  const [selectedGoal, setSelectedGoal] = useState<'cutting' | 'maintenance' | 'bulking'>('maintenance');
+  const [selectedGoal, setSelectedGoal] = useState<SelectedGoal>(initialSelectedGoal);
   const [selectedVariation, setSelectedVariation] = useState<'optimal' | 'highCarb' | 'highFat'>('optimal');
+
+  useEffect(() => {
+    if (initialSelectedGoal) {
+      setSelectedGoal(initialSelectedGoal);
+    }
+  }, [initialSelectedGoal]);
+
+  const handleGoalSelect = (goal: SelectedGoal) => {
+    setSelectedGoal(goal);
+    onGoalChange?.(goal);
+  };
 
   if (!tdeeResult) {
     return null;
@@ -78,31 +103,58 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
         )}
       </div>
 
-      {/* 9-Preset Macro Matrix Explorer */}
-      <div className="glass-card responsive-card-padding">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+      {/* 9 Macro Targets Matrix */}
+      <div className="glass-card" style={{ padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Macro Targets</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-              Calibrated to protect lean muscle mass & optimize energy
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
+                Macro Targets
+              </h2>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+              Calibrated to protect lean muscle mass & optimize performance
             </p>
           </div>
 
-          <button onClick={onOpenSettings} className="btn-ghost" style={{ fontSize: '12px', padding: '6px 12px', minHeight: '34px' }}>
+          <button
+            onClick={onOpenSettings}
+            className="btn-ghost"
+            style={{ fontSize: '12px', padding: '6px 12px' }}
+          >
             Edit Stats
           </button>
         </div>
 
-        {/* Phase 1: 3 Goal Tabs */}
-        <div className="goal-tabs-grid" style={{ marginBottom: '14px' }}>
+        {/* 1. Goal Selector Tabs */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px',
+            background: 'var(--bg-secondary)',
+            padding: '4px',
+            borderRadius: 'var(--radius-lg)',
+            marginBottom: '20px',
+          }}
+        >
           <button
-            type="button"
-            onClick={() => setSelectedGoal('cutting')}
-            className="goal-tab-btn"
+            onClick={() => handleGoalSelect('cutting')}
             style={{
-              background: selectedGoal === 'cutting' ? 'var(--accent-gradient)' : 'transparent',
-              color: selectedGoal === 'cutting' ? '#ffffff' : 'var(--text-secondary)',
-              boxShadow: selectedGoal === 'cutting' ? '0 1px 3px rgba(16, 185, 129, 0.25)' : 'none',
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-md)',
+              border: selectedGoal === 'cutting' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
+              background: selectedGoal === 'cutting' ? 'var(--bg-surface)' : 'transparent',
+              color: selectedGoal === 'cutting' ? '#059669' : 'var(--text-secondary)',
+              fontWeight: selectedGoal === 'cutting' ? '700' : '500',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: selectedGoal === 'cutting' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.2s ease',
             }}
           >
             <TrendingDown size={14} />
@@ -110,13 +162,22 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
           </button>
 
           <button
-            type="button"
-            onClick={() => setSelectedGoal('maintenance')}
-            className="goal-tab-btn"
+            onClick={() => handleGoalSelect('maintenance')}
             style={{
-              background: selectedGoal === 'maintenance' ? 'var(--accent-gradient)' : 'transparent',
-              color: selectedGoal === 'maintenance' ? '#ffffff' : 'var(--text-secondary)',
-              boxShadow: selectedGoal === 'maintenance' ? '0 1px 3px rgba(16, 185, 129, 0.25)' : 'none',
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-md)',
+              border: selectedGoal === 'maintenance' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
+              background: selectedGoal === 'maintenance' ? 'var(--bg-surface)' : 'transparent',
+              color: selectedGoal === 'maintenance' ? '#059669' : 'var(--text-secondary)',
+              fontWeight: selectedGoal === 'maintenance' ? '700' : '500',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: selectedGoal === 'maintenance' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.2s ease',
             }}
           >
             <Target size={14} />
@@ -124,13 +185,22 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
           </button>
 
           <button
-            type="button"
-            onClick={() => setSelectedGoal('bulking')}
-            className="goal-tab-btn"
+            onClick={() => handleGoalSelect('bulking')}
             style={{
-              background: selectedGoal === 'bulking' ? 'var(--accent-gradient)' : 'transparent',
-              color: selectedGoal === 'bulking' ? '#ffffff' : 'var(--text-secondary)',
-              boxShadow: selectedGoal === 'bulking' ? '0 1px 3px rgba(16, 185, 129, 0.25)' : 'none',
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-md)',
+              border: selectedGoal === 'bulking' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
+              background: selectedGoal === 'bulking' ? 'var(--bg-surface)' : 'transparent',
+              color: selectedGoal === 'bulking' ? '#059669' : 'var(--text-secondary)',
+              fontWeight: selectedGoal === 'bulking' ? '700' : '500',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: selectedGoal === 'bulking' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.2s ease',
             }}
           >
             <TrendingUp size={14} />
@@ -138,96 +208,84 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
           </button>
         </div>
 
-        {/* Phase 2: 3 Diet Variation Sub-Tabs */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {/* 2. Variation Selector Pills */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <button
-            type="button"
             onClick={() => setSelectedVariation('optimal')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-full)',
-              border: selectedVariation === 'optimal' ? '1.5px solid var(--color-accent)' : '1px solid var(--border-light)',
-              background: selectedVariation === 'optimal' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
-              color: selectedVariation === 'optimal' ? '#059669' : 'var(--text-secondary)',
-              fontWeight: '600',
-              fontSize: '11px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
+            className={`pill-btn ${selectedVariation === 'optimal' ? 'active' : ''}`}
+            style={{ fontSize: '12px' }}
           >
             ⭐ Balanced
           </button>
-
           <button
-            type="button"
             onClick={() => setSelectedVariation('highCarb')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-full)',
-              border: selectedVariation === 'highCarb' ? '1.5px solid var(--macro-protein)' : '1px solid var(--border-light)',
-              background: selectedVariation === 'highCarb' ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-surface)',
-              color: selectedVariation === 'highCarb' ? '#2563eb' : 'var(--text-secondary)',
-              fontWeight: '600',
-              fontSize: '11px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
+            className={`pill-btn ${selectedVariation === 'highCarb' ? 'active' : ''}`}
+            style={{ fontSize: '12px' }}
           >
             ⚡ High-Carb
           </button>
-
           <button
-            type="button"
             onClick={() => setSelectedVariation('highFat')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-full)',
-              border: selectedVariation === 'highFat' ? '1.5px solid var(--macro-fats)' : '1px solid var(--border-light)',
-              background: selectedVariation === 'highFat' ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-surface)',
-              color: selectedVariation === 'highFat' ? '#db2777' : 'var(--text-secondary)',
-              fontWeight: '600',
-              fontSize: '11px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
+            className={`pill-btn ${selectedVariation === 'highFat' ? 'active' : ''}`}
+            style={{ fontSize: '12px' }}
           >
-            🥑 High-Fat
+            🥑 High-Fat (Keto Lean)
           </button>
         </div>
 
-        {/* Selected Preset Details */}
+        {/* 3. Active Target Overview Card */}
         <div
           style={{
-            background: 'var(--bg-primary)',
+            background: 'var(--bg-secondary)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '20px',
             border: '1px solid var(--border-light)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
             <div>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Target Calories</span>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>
-                {currentBreakdown.calories} <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-muted)' }}>kcal</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '700' }}>
+                Target Calories
+              </span>
+              <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--text-main)' }}>
+                {currentBreakdown.calories} <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-muted)' }}>kcal</span>
               </div>
             </div>
-            <div className="badge">
-              {selectedGoal.toUpperCase()} • {selectedVariation.toUpperCase()}
-            </div>
+
+            <span
+              className="badge"
+              style={{
+                textTransform: 'uppercase',
+                fontSize: '10px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#059669',
+                borderColor: 'rgba(16, 185, 129, 0.2)',
+              }}
+            >
+              {selectedGoal} • {selectedVariation}
+            </span>
           </div>
 
-          {/* Macro Visual Distribution Bar */}
-          <div style={{ height: '8px', width: '100%', display: 'flex', borderRadius: 'var(--radius-full)', overflow: 'hidden', marginBottom: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.05) inset' }}>
-            <div style={{ width: `${currentBreakdown.proteinPercentage}%`, background: 'var(--macro-protein)' }} title={`Protein: ${currentBreakdown.proteinPercentage}%`} />
-            <div style={{ width: `${currentBreakdown.carbPercentage}%`, background: 'var(--macro-carbs)' }} title={`Carbs: ${currentBreakdown.carbPercentage}%`} />
-            <div style={{ width: `${currentBreakdown.fatPercentage}%`, background: 'var(--macro-fats)' }} title={`Fats: ${currentBreakdown.fatPercentage}%`} />
+          {/* Macro Ratio Color Bar */}
+          <div
+            style={{
+              height: '8px',
+              borderRadius: 'var(--radius-full)',
+              display: 'flex',
+              overflow: 'hidden',
+              marginBottom: '16px',
+            }}
+          >
+            <div style={{ width: `${currentBreakdown.proteinPercentage}%`, background: 'var(--macro-protein)' }} title="Protein" />
+            <div style={{ width: `${currentBreakdown.carbPercentage}%`, background: 'var(--macro-carbs)' }} title="Carbs" />
+            <div style={{ width: `${currentBreakdown.fatPercentage}%`, background: 'var(--macro-fats)' }} title="Fats" />
           </div>
 
-          {/* 3 Macro Value Cards */}
-          <div className="macro-cards-grid">
+          {/* 3 Macro Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(59, 130, 246, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
               <span style={{ fontSize: '10px', color: 'var(--macro-protein)', fontWeight: '700', textTransform: 'uppercase' }}>
-                🥩 Protein ({currentBreakdown.proteinPercentage}%)
+                🍗 Protein ({currentBreakdown.proteinPercentage}%)
               </span>
               <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                 {currentBreakdown.proteinGrams}g
@@ -271,6 +329,8 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
         calorieTarget={currentBreakdown.calories}
         goal={selectedGoal}
         unitPreference={unitPreference}
+        initialTargetWeight={initialTargetWeight}
+        onTargetWeightChange={onTargetWeightChange}
       />
     </div>
   );

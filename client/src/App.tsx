@@ -4,7 +4,8 @@ import { Navbar } from './components/Navbar';
 import { LiveTDEECalculator, type GuestMetrics } from './components/LiveTDEECalculator';
 import { Dashboard } from './components/Dashboard';
 import { AuthModal } from './components/AuthModal';
-import type { UnitPreference } from './types/user';
+import { userService } from './services/userService';
+import type { UnitPreference, ThemePreference } from './types/user';
 import { Loader2 } from 'lucide-react';
 
 const MainView: React.FC = () => {
@@ -15,19 +16,32 @@ const MainView: React.FC = () => {
   const [guestMetricsHandover, setGuestMetricsHandover] = useState<GuestMetrics | null>(null);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState<boolean>(false);
 
-  // Theme Management (Light vs Dark)
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('macroapp_theme');
-    return saved === 'dark' ? 'dark' : 'light';
-  });
+  // Theme State: Defaults to light for guests; synced to account profile for signed-in members
+  const [theme, setTheme] = useState<ThemePreference>('light');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('macroapp_theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  // When user status changes from signed in to signed out, reset guest view to default
+  useEffect(() => {
+    if (!user) {
+      setTheme('light');
+    }
+  }, [user]);
+
+  const toggleTheme = async () => {
+    const nextTheme: ThemePreference = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+
+    // Only persist theme to Cloudflare D1 if user is logged in
+    if (user) {
+      try {
+        await userService.updateProfile({ themePreference: nextTheme });
+      } catch (err) {
+        console.error('Failed to persist theme preference:', err);
+      }
+    }
   };
 
   const handleOpenAuth = (mode: 'login' | 'register') => {
@@ -79,6 +93,7 @@ const MainView: React.FC = () => {
             guestMetricsHandover={guestMetricsHandover}
             isStatsModalOpen={isStatsModalOpen}
             setIsStatsModalOpen={setIsStatsModalOpen}
+            onThemeSync={(persistedTheme) => setTheme(persistedTheme)}
           />
         ) : (
           <LiveTDEECalculator

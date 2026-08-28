@@ -8,6 +8,8 @@ export type ActivityLevel =
   | 'extremely_active';
 
 export type UnitPreference = 'metric' | 'imperial';
+export type ThemePreference = 'light' | 'dark';
+export type SelectedGoal = 'cutting' | 'maintenance' | 'bulking';
 
 export interface UserProfile {
   userId: string;
@@ -15,9 +17,12 @@ export interface UserProfile {
   age: number;
   heightCm: number;
   weightKg: number;
-  bodyFatPercentage?: number;
+  bodyFatPercentage?: number | null;
   activityLevel: ActivityLevel;
   unitPreference: UnitPreference;
+  themePreference?: ThemePreference;
+  selectedGoal?: SelectedGoal;
+  targetGoalWeight?: number | null;
   isSetupComplete?: boolean;
   updatedAt: string;
 }

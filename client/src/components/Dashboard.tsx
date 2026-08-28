@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
-import type { UserProfile, TDEEResult, UnitPreference } from '../types/user';
+import type { UserProfile, TDEEResult, UnitPreference, SelectedGoal, ThemePreference } from '../types/user';
 import { ProfileStatsModal } from './ProfileStatsModal';
 import { OnboardingModal } from './OnboardingModal';
 import { TDEECalculatorView } from './TDEECalculatorView';
@@ -17,6 +17,7 @@ interface DashboardProps {
   guestMetricsHandover?: GuestMetrics | null;
   isStatsModalOpen: boolean;
   setIsStatsModalOpen: (open: boolean) => void;
+  onThemeSync?: (theme: ThemePreference) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -25,6 +26,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   guestMetricsHandover,
   isStatsModalOpen,
   setIsStatsModalOpen,
+  onThemeSync,
 }) => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -41,6 +43,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         setTdeeResult(res.data.tdeeResult);
         if (res.data.profile.unitPreference) {
           onUnitToggle(res.data.profile.unitPreference);
+        }
+        if (res.data.profile.themePreference) {
+          onThemeSync?.(res.data.profile.themePreference);
         }
         // Trigger onboarding ONLY immediately following a new account registration
         const isNewSignup = sessionStorage.getItem('just_signed_up') === 'true';
@@ -67,6 +72,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
       setProfile(res.data.profile);
       setTdeeResult(res.data.tdeeResult);
     }
+  };
+
+  const handleGoalChange = (goal: SelectedGoal) => {
+    handleSaveProfile({ selectedGoal: goal });
+  };
+
+  const handleTargetWeightChange = (targetWeight: number | null) => {
+    handleSaveProfile({ targetGoalWeight: targetWeight });
   };
 
   const handleCompleteOnboarding = async (updatedFields: Partial<UserProfile>) => {
@@ -162,6 +175,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
             tdeeResult={tdeeResult}
             weightKg={profile?.weightKg ?? 78}
             unitPreference={unitPreference}
+            initialSelectedGoal={profile?.selectedGoal ?? 'maintenance'}
+            initialTargetWeight={profile?.targetGoalWeight}
+            onGoalChange={handleGoalChange}
+            onTargetWeightChange={handleTargetWeightChange}
             onOpenSettings={() => setIsStatsModalOpen(true)}
           />
 

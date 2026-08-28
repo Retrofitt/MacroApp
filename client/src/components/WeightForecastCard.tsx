@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { UnitPreference } from '../types/user';
 import { calculateWeightForecast } from '../utils/tdeeCalculator';
 import { TrendingDown, TrendingUp, Calendar, Target, Clock, AlertCircle } from 'lucide-react';
@@ -9,6 +9,8 @@ interface WeightForecastCardProps {
   calorieTarget: number;
   goal: 'cutting' | 'maintenance' | 'bulking';
   unitPreference: UnitPreference;
+  initialTargetWeight?: number | null;
+  onTargetWeightChange?: (targetWeight: number | null) => void;
 }
 
 export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
@@ -17,11 +19,27 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
   calorieTarget,
   goal,
   unitPreference,
+  initialTargetWeight,
+  onTargetWeightChange,
 }) => {
-  const [targetWeightInput, setTargetWeightInput] = useState<string>('');
+  const [targetWeightInput, setTargetWeightInput] = useState<string>(
+    initialTargetWeight !== undefined && initialTargetWeight !== null ? String(initialTargetWeight) : ''
+  );
+
+  useEffect(() => {
+    if (initialTargetWeight !== undefined && initialTargetWeight !== null) {
+      setTargetWeightInput(String(initialTargetWeight));
+    }
+  }, [initialTargetWeight]);
 
   const dailyCalorieDifference = calorieTarget - tdee;
   const parsedTargetWeight = targetWeightInput ? parseFloat(targetWeightInput) : undefined;
+
+  const handleInputChange = (val: string) => {
+    setTargetWeightInput(val);
+    const parsed = val ? parseFloat(val) : null;
+    onTargetWeightChange?.(parsed && !isNaN(parsed) && parsed > 0 ? parsed : null);
+  };
 
   const forecast = calculateWeightForecast(
     currentWeightKg,
@@ -112,54 +130,77 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
         ))}
       </div>
 
-      {/* Target Goal Weight Calculator */}
+      {/* Target Goal Weight Calculator (Prominent interactive box) */}
       <div
         style={{
           background: 'var(--bg-primary)',
-          border: '1px solid var(--border-light)',
+          border: '1.5px solid rgba(16, 185, 129, 0.25)',
           borderRadius: 'var(--radius-md)',
-          padding: '14px 18px',
+          padding: '16px 18px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '14px',
+          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.04)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-light)',
-              padding: '9px',
+              background: 'rgba(16, 185, 129, 0.12)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              padding: '10px',
               borderRadius: '10px',
               display: 'flex',
               color: 'var(--color-accent)',
             }}
           >
-            <Target size={18} />
+            <Target size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+            <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>
               Goal Weight Timeline
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Enter your target weight to calculate your estimated completion date
+              Enter your target goal weight to calculate your estimated completion date
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div style={{ width: '120px' }}>
+          {/* Prominent Goal Weight Type Box */}
+          <div style={{ position: 'relative', width: '140px' }}>
             <input
               type="number"
               step="0.5"
+              min="20"
+              max="500"
               placeholder={`e.g. ${isImperial ? '165' : '75'}`}
               value={targetWeightInput}
-              onChange={(e) => setTargetWeightInput(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               className="input-field"
-              style={{ padding: '7px 10px', fontSize: '13px' }}
+              style={{
+                padding: '9px 36px 9px 12px',
+                fontSize: '14px',
+                fontWeight: '700',
+                border: '1.5px solid var(--color-accent)',
+                boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.12)',
+              }}
             />
+            <span
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '10px',
+                fontSize: '11px',
+                fontWeight: '700',
+                color: 'var(--color-accent)',
+                pointerEvents: 'none',
+              }}
+            >
+              {isImperial ? 'lbs' : 'kg'}
+            </span>
           </div>
 
           {forecast.targetGoalForecast && (
@@ -168,12 +209,12 @@ export const WeightForecastCard: React.FC<WeightForecastCardProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '7px 12px',
+                padding: '8px 14px',
                 borderRadius: 'var(--radius-md)',
-                background: forecast.targetGoalForecast.isFeasible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                border: forecast.targetGoalForecast.isFeasible ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
+                background: forecast.targetGoalForecast.isFeasible ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.1)',
+                border: forecast.targetGoalForecast.isFeasible ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.25)',
                 fontSize: '12px',
-                fontWeight: '600',
+                fontWeight: '700',
                 color: forecast.targetGoalForecast.isFeasible ? '#059669' : 'var(--danger-text)',
               }}
             >

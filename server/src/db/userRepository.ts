@@ -1,6 +1,14 @@
 import { d1 } from './d1.js';
 import { ensureDatabaseSchema } from './schema.js';
-import { User, UserProfile, BiologicalSex, ActivityLevel, UnitPreference } from '../types/index.js';
+import {
+  User,
+  UserProfile,
+  BiologicalSex,
+  ActivityLevel,
+  UnitPreference,
+  ThemePreference,
+  SelectedGoal,
+} from '../types/index.js';
 
 // Local development in-memory fallback maps if D1 is not configured
 const localUsersDb: Map<string, User> = new Map();
@@ -24,6 +32,9 @@ interface D1ProfileRow {
   body_fat_percentage: number | null;
   activity_level: string;
   unit_preference: string;
+  theme_preference?: string;
+  selected_goal?: string;
+  target_goal_weight?: number | null;
   is_setup_complete: number;
   updated_at: string;
 }
@@ -46,6 +57,9 @@ const mapProfileRow = (row: D1ProfileRow): UserProfile => ({
   bodyFatPercentage: row.body_fat_percentage ?? undefined,
   activityLevel: (row.activity_level as ActivityLevel) || 'moderately_active',
   unitPreference: (row.unit_preference as UnitPreference) || 'imperial',
+  themePreference: (row.theme_preference as ThemePreference) || 'light',
+  selectedGoal: (row.selected_goal as SelectedGoal) || 'maintenance',
+  targetGoalWeight: row.target_goal_weight ?? undefined,
   isSetupComplete: Boolean(row.is_setup_complete),
   updatedAt: new Date(row.updated_at),
 });
@@ -206,7 +220,8 @@ export const userRepository = {
     try {
       const rows = await d1.query<D1ProfileRow>(
         `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
-                activity_level, unit_preference, is_setup_complete, updated_at
+                activity_level, unit_preference, theme_preference, selected_goal,
+                target_goal_weight, is_setup_complete, updated_at
          FROM user_profiles WHERE user_id = ? LIMIT 1;`,
         [userId]
       );
@@ -216,7 +231,8 @@ export const userRepository = {
         await this.ensureSchema(true);
         const rows = await d1.query<D1ProfileRow>(
           `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
-                  activity_level, unit_preference, is_setup_complete, updated_at
+                  activity_level, unit_preference, theme_preference, selected_goal,
+                  target_goal_weight, is_setup_complete, updated_at
            FROM user_profiles WHERE user_id = ? LIMIT 1;`,
           [userId]
         );
@@ -245,6 +261,12 @@ export const userRepository = {
           : existing?.bodyFatPercentage,
       activityLevel: data.activityLevel ?? existing?.activityLevel ?? 'moderately_active',
       unitPreference: data.unitPreference ?? existing?.unitPreference ?? 'imperial',
+      themePreference: data.themePreference ?? existing?.themePreference ?? 'light',
+      selectedGoal: data.selectedGoal ?? existing?.selectedGoal ?? 'maintenance',
+      targetGoalWeight:
+        data.targetGoalWeight !== undefined
+          ? data.targetGoalWeight
+          : existing?.targetGoalWeight,
       isSetupComplete:
         data.isSetupComplete !== undefined
           ? data.isSetupComplete
@@ -263,8 +285,9 @@ export const userRepository = {
       await d1.execute(
         `INSERT INTO user_profiles (
            user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
-           activity_level, unit_preference, is_setup_complete, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           activity_level, unit_preference, theme_preference, selected_goal,
+           target_goal_weight, is_setup_complete, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(user_id) DO UPDATE SET
            biological_sex = excluded.biological_sex,
            age = excluded.age,
@@ -273,6 +296,9 @@ export const userRepository = {
            body_fat_percentage = excluded.body_fat_percentage,
            activity_level = excluded.activity_level,
            unit_preference = excluded.unit_preference,
+           theme_preference = excluded.theme_preference,
+           selected_goal = excluded.selected_goal,
+           target_goal_weight = excluded.target_goal_weight,
            is_setup_complete = excluded.is_setup_complete,
            updated_at = excluded.updated_at;`,
         [
@@ -284,6 +310,9 @@ export const userRepository = {
           merged.bodyFatPercentage ?? null,
           merged.activityLevel,
           merged.unitPreference,
+          merged.themePreference ?? 'light',
+          merged.selectedGoal ?? 'maintenance',
+          merged.targetGoalWeight ?? null,
           merged.isSetupComplete ? 1 : 0,
           merged.updatedAt.toISOString(),
         ]
@@ -294,8 +323,9 @@ export const userRepository = {
         await d1.execute(
           `INSERT INTO user_profiles (
              user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
-             activity_level, unit_preference, is_setup_complete, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             activity_level, unit_preference, theme_preference, selected_goal,
+             target_goal_weight, is_setup_complete, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(user_id) DO UPDATE SET
              biological_sex = excluded.biological_sex,
              age = excluded.age,
@@ -304,6 +334,9 @@ export const userRepository = {
              body_fat_percentage = excluded.body_fat_percentage,
              activity_level = excluded.activity_level,
              unit_preference = excluded.unit_preference,
+             theme_preference = excluded.theme_preference,
+             selected_goal = excluded.selected_goal,
+             target_goal_weight = excluded.target_goal_weight,
              is_setup_complete = excluded.is_setup_complete,
              updated_at = excluded.updated_at;`,
           [
@@ -315,6 +348,9 @@ export const userRepository = {
             merged.bodyFatPercentage ?? null,
             merged.activityLevel,
             merged.unitPreference,
+            merged.themePreference ?? 'light',
+            merged.selectedGoal ?? 'maintenance',
+            merged.targetGoalWeight ?? null,
             merged.isSetupComplete ? 1 : 0,
             merged.updatedAt.toISOString(),
           ]
