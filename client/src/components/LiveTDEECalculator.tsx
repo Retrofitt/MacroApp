@@ -46,7 +46,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
   onSignUpWithStats,
   initialMetrics,
 }) => {
-  // Metric base state - defaults to empty/unselected with placeholders for guests
+  // Metric base state - inputs default to empty with placeholders for guests
   const [sex, setSex] = useState<BiologicalSex | null>(initialMetrics?.sex ?? null);
   const [age, setAge] = useState<number | ''>(initialMetrics?.age ?? '');
   const [heightCm, setHeightCm] = useState<number | ''>(initialMetrics?.heightCm ?? '');
@@ -54,8 +54,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
   const [bodyFatInput, setBodyFatInput] = useState<string>(
     initialMetrics?.bodyFat ? String(initialMetrics.bodyFat) : ''
   );
-  const [activity, setActivity] = useState<ActivityLevel | ''>(
-    initialMetrics?.activity ?? ''
+  const [activity, setActivity] = useState<ActivityLevel>(
+    initialMetrics?.activity ?? 'moderately_active'
   );
 
   // Advanced Optionals state
@@ -145,29 +145,24 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
 
   const parsedBodyFat = bodyFatInput ? parseFloat(bodyFatInput) : undefined;
 
-  // Real-time calculation computation - requires valid required inputs
+  // Effective metrics for live computing - uses entered values or standard baseline fallbacks for any unentered fields
+  const effectiveAge = typeof age === 'number' && age > 0 ? age : 25;
+  const effectiveHeightCm = typeof heightCm === 'number' && heightCm > 0 ? heightCm : 178;
+  const effectiveWeightKg = typeof weightKg === 'number' && weightKg > 0 ? weightKg : 78;
+  const effectiveActivity: ActivityLevel = activity || 'moderately_active';
+
+  // Real-time calculation computation - computes live as soon as sex is selected
   const tdeeResult = useMemo(() => {
-    if (
-      !sex ||
-      !activity ||
-      typeof age !== 'number' ||
-      age <= 0 ||
-      typeof heightCm !== 'number' ||
-      heightCm <= 0 ||
-      typeof weightKg !== 'number' ||
-      weightKg <= 0
-    ) {
-      return null;
-    }
+    if (!sex) return null;
     return calculateTDEEFromMetrics(
       sex,
-      age,
-      heightCm,
-      weightKg,
-      activity,
+      effectiveAge,
+      effectiveHeightCm,
+      effectiveWeightKg,
+      effectiveActivity,
       parsedBodyFat && parsedBodyFat > 3 && parsedBodyFat < 60 ? parsedBodyFat : undefined
     );
-  }, [sex, age, heightCm, weightKg, activity, parsedBodyFat]);
+  }, [sex, effectiveAge, effectiveHeightCm, effectiveWeightKg, effectiveActivity, parsedBodyFat]);
 
   const currentGoalPreset: GoalMacroPreset | undefined = tdeeResult ? tdeeResult.presets[selectedGoal] : undefined;
   const currentBreakdown: MacroBreakdown | undefined = currentGoalPreset ? currentGoalPreset.variations[selectedVariation] : undefined;
@@ -769,19 +764,19 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               >
                 <Activity size={24} style={{ color: 'var(--color-accent)', opacity: 0.8 }} />
                 <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>
-                  Enter Your Metrics to View Macro Targets
+                  Select Biological Sex to View Macro Targets
                 </div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '340px', margin: 0 }}>
-                  Fill out your details on the left to compute your exact calorie target and macro ratios.
+                  Choose Male or Female on the left to compute your exact calorie target and macro ratios.
                 </p>
               </div>
             )}
           </div>
 
           {/* Real-time Weight Forecast Card (4/8/12 weeks + Target Goal Estimator) */}
-          {tdeeResult && currentBreakdown && typeof weightKg === 'number' ? (
+          {tdeeResult && currentBreakdown ? (
             <WeightForecastCard
-              currentWeightKg={weightKg}
+              currentWeightKg={effectiveWeightKg}
               tdee={tdeeResult.tdee}
               calorieTarget={currentBreakdown.calories}
               goal={selectedGoal}
@@ -805,7 +800,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                 Weight Timeline Forecast
               </div>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '340px', margin: 0 }}>
-                Enter your metrics above to unlock 4, 8, and 12-week weight progression milestones.
+                Select your biological sex above to unlock 4, 8, and 12-week weight progression milestones.
               </p>
             </div>
           )}
