@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Sign Out"
               >
                 <LogOut size={13} />
-                <span className="btn-label-desktop">Exit</span>
+                <span className="btn-label-desktop">Log Out</span>
               </button>
             </div>
           ) : (
