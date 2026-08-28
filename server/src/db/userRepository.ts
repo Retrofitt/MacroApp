@@ -5,6 +5,8 @@ import { User, UserProfile, BiologicalSex, ActivityLevel, UnitPreference } from 
 const localUsersDb: Map<string, User> = new Map();
 const localProfilesDb: Map<string, UserProfile> = new Map();
 
+let schemaInitialized = false;
+
 interface D1UserRow {
   id: string;
   email: string;
@@ -50,6 +52,41 @@ const mapProfileRow = (row: D1ProfileRow): UserProfile => ({
 });
 
 export const userRepository = {
+  async ensureSchema(): Promise<void> {
+    if (schemaInitialized || !d1.isConfigured()) return;
+    try {
+      await d1.execute(`
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          username TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
+      `);
+
+      await d1.execute(`
+        CREATE TABLE IF NOT EXISTS user_profiles (
+          user_id TEXT PRIMARY KEY,
+          biological_sex TEXT NOT NULL DEFAULT 'male',
+          age INTEGER NOT NULL DEFAULT 25,
+          height_cm REAL NOT NULL DEFAULT 178,
+          weight_kg REAL NOT NULL DEFAULT 78,
+          body_fat_percentage REAL,
+          activity_level TEXT NOT NULL DEFAULT 'moderately_active',
+          unit_preference TEXT NOT NULL DEFAULT 'imperial',
+          is_setup_complete INTEGER NOT NULL DEFAULT 0,
+          updated_at TEXT NOT NULL
+        );
+      `);
+
+      schemaInitialized = true;
+    } catch (err) {
+      console.error('Failed to auto-initialize Cloudflare D1 schema:', err);
+    }
+  },
+
   async findByEmail(email: string): Promise<User | null> {
     if (!d1.isConfigured()) {
       return Array.from(localUsersDb.values()).find(
@@ -57,12 +94,26 @@ export const userRepository = {
       ) || null;
     }
 
-    const rows = await d1.query<D1UserRow>(
-      'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1;',
-      [email]
-    );
+    await this.ensureSchema();
 
-    return rows.length > 0 ? mapUserRow(rows[0]) : null;
+    try {
+      const rows = await d1.query<D1UserRow>(
+        'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1;',
+        [email]
+      );
+      return rows.length > 0 ? mapUserRow(rows[0]) : null;
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('no such table')) {
+        schemaInitialized = false;
+        await this.ensureSchema();
+        const rows = await d1.query<D1UserRow>(
+          'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1;',
+          [email]
+        );
+        return rows.length > 0 ? mapUserRow(rows[0]) : null;
+      }
+      throw err;
+    }
   },
 
   async findByUsername(username: string): Promise<User | null> {
@@ -72,12 +123,26 @@ export const userRepository = {
       ) || null;
     }
 
-    const rows = await d1.query<D1UserRow>(
-      'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1;',
-      [username]
-    );
+    await this.ensureSchema();
 
-    return rows.length > 0 ? mapUserRow(rows[0]) : null;
+    try {
+      const rows = await d1.query<D1UserRow>(
+        'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1;',
+        [username]
+      );
+      return rows.length > 0 ? mapUserRow(rows[0]) : null;
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('no such table')) {
+        schemaInitialized = false;
+        await this.ensureSchema();
+        const rows = await d1.query<D1UserRow>(
+          'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1;',
+          [username]
+        );
+        return rows.length > 0 ? mapUserRow(rows[0]) : null;
+      }
+      throw err;
+    }
   },
 
   async findById(id: string): Promise<User | null> {
@@ -85,12 +150,26 @@ export const userRepository = {
       return localUsersDb.get(id) || null;
     }
 
-    const rows = await d1.query<D1UserRow>(
-      'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE id = ? LIMIT 1;',
-      [id]
-    );
+    await this.ensureSchema();
 
-    return rows.length > 0 ? mapUserRow(rows[0]) : null;
+    try {
+      const rows = await d1.query<D1UserRow>(
+        'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE id = ? LIMIT 1;',
+        [id]
+      );
+      return rows.length > 0 ? mapUserRow(rows[0]) : null;
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('no such table')) {
+        schemaInitialized = false;
+        await this.ensureSchema();
+        const rows = await d1.query<D1UserRow>(
+          'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE id = ? LIMIT 1;',
+          [id]
+        );
+        return rows.length > 0 ? mapUserRow(rows[0]) : null;
+      }
+      throw err;
+    }
   },
 
   async createUser(data: {
@@ -114,6 +193,8 @@ export const userRepository = {
       return newUser;
     }
 
+    await this.ensureSchema();
+
     await d1.execute(
       `INSERT INTO users (id, email, username, password_hash, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?);`,
@@ -135,14 +216,30 @@ export const userRepository = {
       return localProfilesDb.get(userId) || null;
     }
 
-    const rows = await d1.query<D1ProfileRow>(
-      `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
-              activity_level, unit_preference, is_setup_complete, updated_at
-       FROM user_profiles WHERE user_id = ? LIMIT 1;`,
-      [userId]
-    );
+    await this.ensureSchema();
 
-    return rows.length > 0 ? mapProfileRow(rows[0]) : null;
+    try {
+      const rows = await d1.query<D1ProfileRow>(
+        `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
+                activity_level, unit_preference, is_setup_complete, updated_at
+         FROM user_profiles WHERE user_id = ? LIMIT 1;`,
+        [userId]
+      );
+      return rows.length > 0 ? mapProfileRow(rows[0]) : null;
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('no such table')) {
+        schemaInitialized = false;
+        await this.ensureSchema();
+        const rows = await d1.query<D1ProfileRow>(
+          `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
+                  activity_level, unit_preference, is_setup_complete, updated_at
+           FROM user_profiles WHERE user_id = ? LIMIT 1;`,
+          [userId]
+        );
+        return rows.length > 0 ? mapProfileRow(rows[0]) : null;
+      }
+      throw err;
+    }
   },
 
   async upsertProfile(
@@ -175,6 +272,8 @@ export const userRepository = {
       localProfilesDb.set(userId, merged);
       return merged;
     }
+
+    await this.ensureSchema();
 
     await d1.execute(
       `INSERT INTO user_profiles (
