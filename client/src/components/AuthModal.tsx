@@ -77,18 +77,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-        padding: '16px',
-      }}
+      className="modal-backdrop-fixed"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -98,9 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         style={{
           maxWidth: '460px',
           position: 'relative',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-light)',
-          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.15)',
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         <button

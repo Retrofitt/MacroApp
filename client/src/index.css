@@ -446,19 +446,38 @@ a {
   }
 }
 
-/* Modal responsive sizing */
+/* Modal overlay and centering system */
+.modal-backdrop-fixed {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-modal-backdrop);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+  overscroll-behavior: contain;
+}
+
 .modal-responsive-card {
   width: 100%;
-  max-width: 540px;
-  max-height: 92vh;
+  max-width: 520px;
+  max-height: min(90vh, 740px);
+  max-height: min(90dvh, 740px);
   overflow-y: auto;
-  padding: 20px 16px;
+  padding: 22px 18px;
   border-radius: var(--radius-lg);
+  margin: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
 }
 
 @media (min-width: 640px) {
   .modal-responsive-card {
-    padding: 28px 24px;
+    padding: 30px 26px;
   }
 }
 

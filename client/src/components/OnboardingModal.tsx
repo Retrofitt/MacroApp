@@ -128,75 +128,67 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-        padding: '16px',
+      className="modal-backdrop-fixed"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          // Keep onboarding focused
+        }
       }}
     >
       <div
         className="glass-card animate-modal modal-responsive-card"
         style={{
-          maxWidth: '560px',
-          background: 'var(--bg-surface)',
           border: '1.5px solid var(--color-accent)',
-          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.15)',
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         {/* Onboarding Welcome Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
           <div
             style={{
               background: 'var(--accent-gradient)',
-              padding: '12px',
-              borderRadius: '14px',
+              padding: '10px',
+              borderRadius: '12px',
               display: 'flex',
               color: '#ffffff',
               boxShadow: 'var(--accent-glow)',
             }}
           >
-            <Sparkles size={24} />
+            <Sparkles size={22} />
           </div>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-              <span className="badge" style={{ fontSize: '11px', padding: '2px 8px' }}>
+              <span className="badge" style={{ fontSize: '10px', padding: '1px 7px' }}>
                 Onboarding Setup
               </span>
             </div>
-            <h2 style={{ fontSize: '22px', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
               Your Metabolic Profile
             </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
               Confirm your statistics to personalize your BMR, TDEE, and macro targets
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Sex Selection */}
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
               Biological Sex <span style={{ fontWeight: '400', fontSize: '11px', color: 'var(--text-muted)' }}>(for BMR formula)</span>
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <button
                 type="button"
                 onClick={() => setSex('male')}
                 style={{
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: 'var(--radius-md)',
                   border: sex === 'male' ? '1.5px solid var(--color-accent)' : '1px solid var(--border-light)',
-                  background: sex === 'male' ? 'rgba(16, 185, 129, 0.1)' : '#f8fafc',
-                  color: sex === 'male' ? '#059669' : 'var(--text-secondary)',
+                  background: sex === 'male' ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-secondary)',
+                  color: sex === 'male' ? 'var(--color-accent)' : 'var(--text-secondary)',
                   fontWeight: '700',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
@@ -207,13 +199,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 type="button"
                 onClick={() => setSex('female')}
                 style={{
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: 'var(--radius-md)',
                   border: sex === 'female' ? '1.5px solid var(--color-accent)' : '1px solid var(--border-light)',
-                  background: sex === 'female' ? 'rgba(16, 185, 129, 0.1)' : '#f8fafc',
-                  color: sex === 'female' ? '#059669' : 'var(--text-secondary)',
+                  background: sex === 'female' ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-secondary)',
+                  color: sex === 'female' ? 'var(--color-accent)' : 'var(--text-secondary)',
                   fontWeight: '700',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}

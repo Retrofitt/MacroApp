@@ -92,62 +92,55 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-        padding: '16px',
+      className="modal-backdrop-fixed"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
         className="glass-card animate-modal modal-responsive-card"
         style={{
-          maxWidth: '560px',
           position: 'relative',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-light)',
-          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.15)',
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         <button
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '20px',
-            right: '20px',
+            top: '18px',
+            right: '18px',
             background: 'none',
             border: 'none',
             color: 'var(--text-muted)',
             cursor: 'pointer',
+            padding: '4px',
+            borderRadius: '6px',
+            display: 'flex',
           }}
+          title="Close"
         >
           <X size={20} />
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
           <div style={{ background: 'var(--accent-gradient)', padding: '8px', borderRadius: '10px', color: '#ffffff', boxShadow: 'var(--accent-glow)' }}>
-            <UserCheck size={20} />
+            <UserCheck size={18} />
           </div>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>Body Statistics & TDEE Settings</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-              Used strictly for precision BMR & macro mathematical models
+            <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>Body Statistics & TDEE Settings</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              Used for precision BMR & macro mathematical models
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
               Biological Sex (For BMR Metabolic Formula)
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <button
                 type="button"
                 onClick={() => setSex('male')}
@@ -155,10 +148,12 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
                   padding: '10px',
                   borderRadius: 'var(--radius-md)',
                   border: sex === 'male' ? '1.5px solid var(--color-accent)' : '1px solid var(--border-light)',
-                  background: sex === 'male' ? 'rgba(16, 185, 129, 0.1)' : '#f8fafc',
-                  color: sex === 'male' ? '#059669' : 'var(--text-secondary)',
+                  background: sex === 'male' ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-secondary)',
+                  color: sex === 'male' ? 'var(--color-accent)' : 'var(--text-secondary)',
                   fontWeight: '700',
+                  fontSize: '12px',
                   cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 Male (+5 BMR)
@@ -170,10 +165,12 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
                   padding: '10px',
                   borderRadius: 'var(--radius-md)',
                   border: sex === 'female' ? '1.5px solid var(--color-accent)' : '1px solid var(--border-light)',
-                  background: sex === 'female' ? 'rgba(16, 185, 129, 0.1)' : '#f8fafc',
-                  color: sex === 'female' ? '#059669' : 'var(--text-secondary)',
+                  background: sex === 'female' ? 'rgba(16, 185, 129, 0.12)' : 'var(--bg-secondary)',
+                  color: sex === 'female' ? 'var(--color-accent)' : 'var(--text-secondary)',
                   fontWeight: '700',
+                  fontSize: '12px',
                   cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 Female (-161 BMR)
