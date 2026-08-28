@@ -23,10 +23,11 @@ const MainView: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // When user status changes from signed in to signed out, reset guest view to default
+  // When user signs out, reset to standard guest defaults
   useEffect(() => {
     if (!user) {
       setTheme('light');
+      setUnitPreference('imperial');
     }
   }, [user]);
 
@@ -34,12 +35,25 @@ const MainView: React.FC = () => {
     const nextTheme: ThemePreference = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
 
-    // Only persist theme to Cloudflare D1 if user is logged in
+    // Persist theme to Cloudflare D1 if user is logged in
     if (user) {
       try {
         await userService.updateProfile({ themePreference: nextTheme });
       } catch (err) {
         console.error('Failed to persist theme preference:', err);
+      }
+    }
+  };
+
+  const handleUnitToggle = async (newUnit: UnitPreference) => {
+    setUnitPreference(newUnit);
+
+    // Persist unit preference to Cloudflare D1 if user is logged in
+    if (user) {
+      try {
+        await userService.updateProfile({ unitPreference: newUnit });
+      } catch (err) {
+        console.error('Failed to persist unit preference:', err);
       }
     }
   };
@@ -77,7 +91,7 @@ const MainView: React.FC = () => {
       {/* Top Navigation Bar with Theme & Unit Switchers */}
       <Navbar
         unitPreference={unitPreference}
-        onUnitToggle={setUnitPreference}
+        onUnitToggle={handleUnitToggle}
         onOpenAuth={handleOpenAuth}
         onOpenStatsModal={() => setIsStatsModalOpen(true)}
         theme={theme}
@@ -98,7 +112,7 @@ const MainView: React.FC = () => {
         ) : (
           <LiveTDEECalculator
             unitPreference={unitPreference}
-            onUnitToggle={setUnitPreference}
+            onUnitToggle={handleUnitToggle}
             onSignUpWithStats={handleSignUpWithStats}
             initialMetrics={guestMetricsHandover ?? undefined}
           />
