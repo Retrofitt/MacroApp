@@ -1,102 +1,134 @@
-# ⚡ MacroApp - Precision Metabolic Engine & TDEE Calculator
+# Macros: Precision TDEE & Metabolic Calculator
 
-A modern, mobile-first full-stack TypeScript web application engineered for precision metabolic calculations, athletic Total Daily Energy Expenditure (TDEE) modeling, 9-variety macro blueprinting, and real-time weight trajectory forecasting.
+A responsive, full-stack web application designed for accurate metabolic calculation, Total Daily Energy Expenditure (TDEE) modeling, macronutrient distribution planning, and weight trajectory forecasting.
 
-![MacroApp Banner](https://img.shields.io/badge/Release-Phase%201%20Production-10b981?style=for-the-badge)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=for-the-badge&logo=typescript)
-![React](https://img.shields.io/badge/React-19.x-61dafb?style=for-the-badge&logo=react)
-![Vite](https://img.shields.io/badge/Vite-8.x-646cff?style=for-the-badge&logo=vite)
-![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js)
+Live Application: [https://macros.ramendev.io](https://macros.ramendev.io)
 
 ---
 
-## 🌟 Core Features (Phase 1)
+## Overview
 
-### 1. 🧮 Zero-Latency Guest Metabolic Engine
-- **Instant Reactive Calculations**: No account required to access live TDEE and macro modeling.
-- **Mifflin-St Jeor Formula**: Gold-standard metabolic baseline for the general population.
-- **Katch-McArdle Formula**: Athlete-grade precision utilizing **Lean Body Mass (LBM)** when Body Fat % is provided.
-- **US Navy Tape Measure Helper**: Embedded tool to accurately estimate body fat % from Neck, Waist, and Hip circumferences.
+Macros provides real-time metabolic and caloric calculations without requiring an account. Users can instantly calculate their Basal Metabolic Rate (BMR) and maintenance calories using validated scientific equations, explore calibrated macronutrient distributions, and estimate target completion timelines based on caloric deficit or surplus goals.
 
-### 2. 🥗 9 Calibrated Macro Presets
-- **3 Caloric Trajectories**:
-  - **Cutting ($-20\%$)**: Preserves lean mass in an optimized deficit.
-  - **Maintenance ($0\%$)**: Caloric equilibrium with full activity multiplier.
-  - **Bulking ($+12\%$)**: Lean surplus designed for muscle hypertrophy with minimal adiposity.
-- **3 Diet Variations per Goal**:
-  - ⭐ **Optimal / Balanced**: Balanced distribution of energy substrates.
-  - ⚡ **High-Carb / Low-Fat**: Athletic performance and glycolytic pump.
-  - 🥑 **High-Fat / Low-Carb**: Enhanced satiety and keto-friendly energy.
-
-### 3. 📈 Weight Change & Timeline Forecast
-- **Scientific Caloric Model**: Based on the physiological $3,500\text{ kcal} \approx 1\text{ lb}$ ($7,700\text{ kcal} \approx 1\text{ kg}$) tissue benchmark.
-- **Milestone Forecast Cards**: Real-time 4-week, 8-week, and 12-week weight projections.
-- **Target Goal Weight Estimator**: Computes required weeks and exact estimated arrival date to reach any target weight.
-
-### 4. 📱 Mobile-First Responsive Architecture
-- Smooth, zero-horizontal-overflow layout engineered for viewports from compact iPhones (375px) to tablets (768px) and desktop monitors (1280px+).
-- Touch-friendly button sizes ($40\text{px}+$ touch targets) and auto-zoom prevention on iOS mobile browsers.
-
-### 5. 🌓 Dual-Theme System (Light & Dark)
-- Seamless 1-click theme switching between **Clean Slate Light Mode** and **Sleek Emerald Dark Mode**.
-- Persisted to browser storage (`localStorage`).
-
-### 6. 🔐 Seamless Authentication & Guest State Handover
-- JWT-authenticated secure user sessions.
-- Guest metrics automatically pre-fill the onboarding wizard upon registration.
+Authenticated users have access to persistent profile storage and customized dashboard features.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **Frontend**: React 19, TypeScript, Vite, Vanilla CSS Design System with CSS Custom Properties, Lucide Icons.
-- **Backend**: Node.js, Express, TypeScript, JWT (JSON Web Tokens), bcryptjs password hashing, In-Memory/Database persistence.
-- **Architecture**: Mobile-first, modular component hierarchy, atomic design tokens.
+### Frontend
+- Framework: React 19
+- Language: TypeScript (Strict mode)
+- Bundler: Vite
+- Styling: Custom Vanilla CSS Design System (Custom Properties, Light and Dark themes)
+- Icons: Lucide React
+
+### Backend
+- Runtime: Node.js (ES Modules)
+- Framework: Express
+- Language: TypeScript
+- Validation: Zod schema validation
+- Authentication: JSON Web Tokens (JWT) with HTTP-only cookies and bcryptjs password hashing
+
+### Infrastructure & Deployment
+- Hosting: Vercel (Decoupled client SPA and serverless API)
+- Domain: macros.ramendev.io
 
 ---
 
-## 🚀 Getting Started Locally
+## Project Roadmap
+
+### Phase 1: Core Metabolic Engine (Current Release)
+- Real-time guest TDEE calculator with live updates on input changes.
+- Mifflin-St Jeor metabolic baseline calculation.
+- Katch-McArdle formula activation when body fat percentage or lean body mass is provided.
+- US Navy circumference method helper (neck, waist, hip measurements) for estimating body fat percentage.
+- 9-preset macronutrient breakdown matrix (Cutting, Maintenance, Bulking across Balanced, High-Carb, and High-Fat ratios).
+- Weight trajectory and milestone forecasting (4-week, 8-week, and 12-week projections).
+- Target goal weight timeline arrival estimator.
+- Responsive mobile-first interface optimized for viewports from 375px to 4K displays.
+- Dual-theme system (Light mode and Nordic Forest Obsidian dark mode) with local storage persistence.
+- JWT authentication system with guest-to-user state preservation during onboarding.
+- Member dashboard with saved profile statistics.
+
+### Phase 2: Daily Macro & Nutrition Tracking
+- Daily meal and food item logging.
+- Real-time progress bars for calories, protein, carbohydrates, and fats.
+- Custom macro target adjustments.
+- Meal template creation and recurring food management.
+
+### Phase 3: Barcode Scanning & Food Database
+- Packaging barcode scanner integration using device camera.
+- Verified nutritional database integration for rapid item lookup.
+- Custom food and recipe creation with automatic macro breakdown.
+
+### Phase 4: Progress Analytics & Weight Tracking
+- Daily and weekly weigh-in logging with moving averages.
+- Actual weight progress versus forecasted trajectory comparison charts.
+- Dynamic calorie recommendation adjustments based on real-world weight trends (adaptive metabolic rate tracking).
+
+### Phase 5+: Continuous Platform Expansion
+- TBD (Continuous development based on performance benchmarks and user feedback).
+
+---
+
+## Local Development Setup
 
 ### Prerequisites
-- Node.js (v18 or higher)
+- Node.js (v18.0.0 or higher)
 - npm or yarn
 
 ### Installation
 
-1. **Clone the repository**:
+1. Clone the repository:
    ```bash
    git clone https://github.com/Retrofitt/MacroApp.git
    cd MacroApp
    ```
 
-2. **Install dependencies**:
+2. Install backend dependencies:
    ```bash
-   # Install server dependencies
-   cd server && npm install
-
-   # Install client dependencies
-   cd ../client && npm install
+   cd server
+   npm install
    ```
 
-3. **Start the Development Servers**:
+3. Install frontend dependencies:
    ```bash
-   # In terminal 1 (Server):
-   cd server && npm run dev
-
-   # In terminal 2 (Client):
-   cd client && npm run dev
+   cd ../client
+   npm install
    ```
 
-4. Open your browser and navigate to `http://localhost:5173`.
+4. Configure environment variables in `server/.env`:
+   ```env
+   PORT=5000
+   NODE_ENV=development
+   JWT_SECRET=your_development_secret_key
+   JWT_EXPIRES_IN=7d
+   CLIENT_URL=http://localhost:5173
+   ```
+
+5. Run development servers:
+
+   In the server directory:
+   ```bash
+   npm run dev
+   ```
+
+   In the client directory:
+   ```bash
+   npm run dev
+   ```
+
+6. Open `http://localhost:5173` in your browser.
 
 ---
 
-## ⚖️ Disclaimer
+## Disclaimer
 
-*MacroApp calculations and macro presets are intended solely for athletic, educational, and informational purposes. They do not constitute medical or clinical advice. Consult a physician or registered dietitian before beginning any significant caloric deficit or fitness protocol.*
+The metabolic, nutritional, and macronutrient calculations provided by this application are for athletic, educational, and informational purposes only. They do not constitute medical advice or clinical dietary prescriptions. Users should consult a qualified physician or registered dietitian before undertaking any significant nutritional deficit or exercise program.
 
 ---
 
-## 📄 License
-MIT License. Built by [Rafael Mendoza](https://portfolio.ramendev.io).
+## License & Attribution
 
+MIT License. Designed and engineered by [Rafael Mendoza](https://portfolio.ramendev.io).
