@@ -48,9 +48,9 @@ export const FooterDisclaimer: React.FC = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             <Copyright size={13} style={{ color: 'var(--text-muted)' }} />
-            <span>{currentYear} <strong>Rafael Mendoza Jr.</strong> All Rights Reserved.</span>
+            <span>{currentYear} <strong>Rafael Mendoza</strong>. All Rights Reserved.</span>
             <span style={{ opacity: 0.5 }}>•</span>
-            <span>Designed & Engineered by <a href="https://ramendev.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: '600', textDecoration: 'underline' }}>Rafael Mendoza Jr.</a></span>
+            <span>Designed & Engineered by <a href="https://portfolio.ramendev.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', fontWeight: '600', textDecoration: 'underline' }}>Rafael Mendoza</a></span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
