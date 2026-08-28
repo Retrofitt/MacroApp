@@ -39,12 +39,14 @@ interface LiveTDEECalculatorProps {
   onUnitToggle: (unit: UnitPreference) => void;
   onSignUpWithStats?: (stats: GuestMetrics) => void;
   initialMetrics?: Partial<GuestMetrics>;
+  onOpenLegal?: (tab: 'privacy' | 'terms') => void;
 }
 
 export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
   unitPreference,
   onSignUpWithStats,
   initialMetrics,
+  onOpenLegal,
 }) => {
   // Metric base state - inputs default to empty with placeholders for guests
   const [sex, setSex] = useState<BiologicalSex | null>(initialMetrics?.sex ?? null);
@@ -808,7 +810,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
       </div>
 
       {/* Professional Medical & Dietary Disclaimer */}
-      <FooterDisclaimer />
+      <FooterDisclaimer onOpenLegal={onOpenLegal} />
     </div>
   );
 };

@@ -8,6 +8,7 @@ interface AuthModalProps {
   onClose: () => void;
   initialMode?: 'login' | 'register';
   onSuccess?: () => void;
+  onOpenLegal?: (tab: 'privacy' | 'terms') => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -15,6 +16,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   initialMode = 'login',
   onSuccess,
+  onOpenLegal,
 }) => {
   const { login, register } = useAuth();
   const [isRegisterMode, setIsRegisterMode] = useState<boolean>(initialMode === 'register');
@@ -221,6 +223,43 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </>
             )}
           </button>
+
+          {isRegisterMode && (
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', margin: '4px 0 0', lineHeight: '1.4' }}>
+              By creating an account, you agree to our{' '}
+              <button
+                type="button"
+                onClick={() => onOpenLegal?.('terms')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent-emerald)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontSize: '11px',
+                }}
+              >
+                Terms of Service
+              </button>{' '}
+              and{' '}
+              <button
+                type="button"
+                onClick={() => onOpenLegal?.('privacy')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent-emerald)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontSize: '11px',
+                }}
+              >
+                Privacy Policy
+              </button>.
+            </p>
+          )}
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', color: 'var(--text-secondary)' }}>

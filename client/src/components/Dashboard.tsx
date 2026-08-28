@@ -18,6 +18,7 @@ interface DashboardProps {
   isStatsModalOpen: boolean;
   setIsStatsModalOpen: (open: boolean) => void;
   onThemeSync?: (theme: ThemePreference) => void;
+  onOpenLegal?: (tab: 'privacy' | 'terms') => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -27,6 +28,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   isStatsModalOpen,
   setIsStatsModalOpen,
   onThemeSync,
+  onOpenLegal,
 }) => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -183,7 +185,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           />
 
           {/* Professional Medical & Dietary Disclaimer + Copyright */}
-          <FooterDisclaimer />
+          <FooterDisclaimer onOpenLegal={onOpenLegal} />
         </div>
       )}
 

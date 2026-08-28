@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { LiveTDEECalculator, type GuestMetrics } from './components/LiveTDEECalculator';
 import { Dashboard } from './components/Dashboard';
 import { AuthModal } from './components/AuthModal';
+import { LegalModal, type LegalTab } from './components/LegalModal';
 import { userService } from './services/userService';
 import type { UnitPreference, ThemePreference } from './types/user';
 import { Loader2 } from 'lucide-react';
@@ -15,6 +16,10 @@ const MainView: React.FC = () => {
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const [guestMetricsHandover, setGuestMetricsHandover] = useState<GuestMetrics | null>(null);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState<boolean>(false);
+
+  // Legal Modal State (Privacy Policy / Terms of Service)
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState<boolean>(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalTab>('privacy');
 
   // Theme State: Defaults to light for guests; synced to account profile for signed-in members
   const [theme, setTheme] = useState<ThemePreference>('light');
@@ -63,6 +68,11 @@ const MainView: React.FC = () => {
     setIsAuthModalOpen(true);
   };
 
+  const handleOpenLegal = (tab: LegalTab = 'privacy') => {
+    setLegalModalTab(tab);
+    setIsLegalModalOpen(true);
+  };
+
   const handleSignUpWithStats = (stats: GuestMetrics) => {
     setGuestMetricsHandover(stats);
     handleOpenAuth('register');
@@ -108,6 +118,7 @@ const MainView: React.FC = () => {
             isStatsModalOpen={isStatsModalOpen}
             setIsStatsModalOpen={setIsStatsModalOpen}
             onThemeSync={(persistedTheme) => setTheme(persistedTheme)}
+            onOpenLegal={handleOpenLegal}
           />
         ) : (
           <LiveTDEECalculator
@@ -115,6 +126,7 @@ const MainView: React.FC = () => {
             onUnitToggle={handleUnitToggle}
             onSignUpWithStats={handleSignUpWithStats}
             initialMetrics={guestMetricsHandover ?? undefined}
+            onOpenLegal={handleOpenLegal}
           />
         )}
       </main>
@@ -124,6 +136,14 @@ const MainView: React.FC = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authModalMode}
+        onOpenLegal={handleOpenLegal}
+      />
+
+      {/* Privacy Policy & Terms of Service Modal */}
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        initialTab={legalModalTab}
       />
     </div>
   );

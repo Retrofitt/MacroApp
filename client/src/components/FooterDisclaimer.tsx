@@ -1,7 +1,11 @@
 import React from 'react';
 import { ShieldCheck, Copyright } from 'lucide-react';
 
-export const FooterDisclaimer: React.FC = () => {
+interface FooterDisclaimerProps {
+  onOpenLegal?: (tab: 'privacy' | 'terms') => void;
+}
+
+export const FooterDisclaimer: React.FC<FooterDisclaimerProps> = ({ onOpenLegal }) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -54,6 +58,38 @@ export const FooterDisclaimer: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('privacy')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: 0,
+                fontSize: '11px',
+                textDecoration: 'underline',
+              }}
+            >
+              Privacy Policy
+            </button>
+            <span style={{ opacity: 0.5 }}>•</span>
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('terms')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: 0,
+                fontSize: '11px',
+                textDecoration: 'underline',
+              }}
+            >
+              Terms of Service
+            </button>
+            <span style={{ opacity: 0.5 }}>•</span>
             <span className="badge" style={{ fontSize: '10px', padding: '1px 7px' }}>
               Phase 1 Production
             </span>
