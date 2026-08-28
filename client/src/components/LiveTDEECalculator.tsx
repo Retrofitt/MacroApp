@@ -26,12 +26,12 @@ import {
 } from 'lucide-react';
 
 export interface GuestMetrics {
-  sex: BiologicalSex;
-  age: number;
-  heightCm: number;
-  weightKg: number;
+  sex?: BiologicalSex;
+  age?: number;
+  heightCm?: number;
+  weightKg?: number;
   bodyFat?: number;
-  activity: ActivityLevel;
+  activity?: ActivityLevel;
 }
 
 interface LiveTDEECalculatorProps {
@@ -46,16 +46,16 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
   onSignUpWithStats,
   initialMetrics,
 }) => {
-  // Metric base state
-  const [sex, setSex] = useState<BiologicalSex>(initialMetrics?.sex ?? 'male');
-  const [age, setAge] = useState<number>(initialMetrics?.age ?? 25);
-  const [heightCm, setHeightCm] = useState<number>(initialMetrics?.heightCm ?? 178);
-  const [weightKg, setWeightKg] = useState<number>(initialMetrics?.weightKg ?? 78);
+  // Metric base state - defaults to empty/unselected with placeholders for guests
+  const [sex, setSex] = useState<BiologicalSex | null>(initialMetrics?.sex ?? null);
+  const [age, setAge] = useState<number | ''>(initialMetrics?.age ?? '');
+  const [heightCm, setHeightCm] = useState<number | ''>(initialMetrics?.heightCm ?? '');
+  const [weightKg, setWeightKg] = useState<number | ''>(initialMetrics?.weightKg ?? '');
   const [bodyFatInput, setBodyFatInput] = useState<string>(
     initialMetrics?.bodyFat ? String(initialMetrics.bodyFat) : ''
   );
-  const [activity, setActivity] = useState<ActivityLevel>(
-    initialMetrics?.activity ?? 'moderately_active'
+  const [activity, setActivity] = useState<ActivityLevel | ''>(
+    initialMetrics?.activity ?? ''
   );
 
   // Advanced Optionals state
@@ -65,10 +65,14 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
   const [hipCircumference, setHipCircumference] = useState<string>('');
 
   // Imperial helper state
-  const [feet, setFeet] = useState<number>(cmToFeetInches(initialMetrics?.heightCm ?? 178).feet);
-  const [inches, setInches] = useState<number>(cmToFeetInches(initialMetrics?.heightCm ?? 178).inches);
-  const [weightLbs, setWeightLbs] = useState<number>(
-    Math.round(kgToLbs(initialMetrics?.weightKg ?? 78))
+  const [feet, setFeet] = useState<number | ''>(
+    initialMetrics?.heightCm ? cmToFeetInches(initialMetrics.heightCm).feet : ''
+  );
+  const [inches, setInches] = useState<number | ''>(
+    initialMetrics?.heightCm ? cmToFeetInches(initialMetrics.heightCm).inches : ''
+  );
+  const [weightLbs, setWeightLbs] = useState<number | ''>(
+    initialMetrics?.weightKg ? Math.round(kgToLbs(initialMetrics.weightKg)) : ''
   );
 
   // Preset Selection State
@@ -76,42 +80,57 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
   const [selectedVariation, setSelectedVariation] = useState<'optimal' | 'highCarb' | 'highFat'>('optimal');
 
   // Imperial handlers
-  const handleHeightImperialChange = (newFeet: number, newInches: number) => {
-    const validFeet = isNaN(newFeet) ? 0 : newFeet;
-    const validInches = isNaN(newInches) ? 0 : newInches;
-    setFeet(validFeet);
-    setInches(validInches);
-    setHeightCm(Math.round(feetInchesToCm(validFeet, validInches)));
+  const handleHeightImperialChange = (newFeet: number | '', newInches: number | '') => {
+    setFeet(newFeet);
+    setInches(newInches);
+    if (newFeet !== '' || newInches !== '') {
+      const f = typeof newFeet === 'number' ? newFeet : 0;
+      const i = typeof newInches === 'number' ? newInches : 0;
+      setHeightCm(Math.round(feetInchesToCm(f, i)));
+    } else {
+      setHeightCm('');
+    }
   };
 
-  const handleWeightImperialChange = (lbs: number) => {
-    const validLbs = isNaN(lbs) ? 0 : lbs;
-    setWeightLbs(validLbs);
-    setWeightKg(Number(lbsToKg(validLbs).toFixed(1)));
+  const handleWeightImperialChange = (lbs: number | '') => {
+    setWeightLbs(lbs);
+    if (typeof lbs === 'number' && !isNaN(lbs) && lbs > 0) {
+      setWeightKg(Number(lbsToKg(lbs).toFixed(1)));
+    } else {
+      setWeightKg('');
+    }
   };
 
   // Metric handlers
-  const handleHeightMetricChange = (cm: number) => {
-    const validCm = isNaN(cm) ? 0 : cm;
-    setHeightCm(validCm);
-    const fi = cmToFeetInches(validCm);
-    setFeet(fi.feet);
-    setInches(fi.inches);
+  const handleHeightMetricChange = (cm: number | '') => {
+    setHeightCm(cm);
+    if (typeof cm === 'number' && !isNaN(cm) && cm > 0) {
+      const fi = cmToFeetInches(cm);
+      setFeet(fi.feet);
+      setInches(fi.inches);
+    } else {
+      setFeet('');
+      setInches('');
+    }
   };
 
-  const handleWeightMetricChange = (kg: number) => {
-    const validKg = isNaN(kg) ? 0 : kg;
-    setWeightKg(validKg);
-    setWeightLbs(Math.round(kgToLbs(validKg)));
+  const handleWeightMetricChange = (kg: number | '') => {
+    setWeightKg(kg);
+    if (typeof kg === 'number' && !isNaN(kg) && kg > 0) {
+      setWeightLbs(Math.round(kgToLbs(kg)));
+    } else {
+      setWeightLbs('');
+    }
   };
 
   // Navy Body Fat calculation handler
   const handleCalculateNavyBodyFat = () => {
+    if (!sex || typeof heightCm !== 'number' || heightCm <= 0) return;
     const neck = parseFloat(neckCircumference);
     const waist = parseFloat(waistCircumference);
     const hip = hipCircumference ? parseFloat(hipCircumference) : undefined;
 
-    if (!neck || !waist) return;
+    if (!neck || !waist || (sex === 'female' && !hip)) return;
 
     // Convert from inches to cm if imperial
     const neckCm = unitPreference === 'imperial' ? neck * 2.54 : neck;
@@ -126,30 +145,42 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
 
   const parsedBodyFat = bodyFatInput ? parseFloat(bodyFatInput) : undefined;
 
-  // Real-time calculation computation
+  // Real-time calculation computation - requires valid required inputs
   const tdeeResult = useMemo(() => {
+    if (
+      !sex ||
+      !activity ||
+      typeof age !== 'number' ||
+      age <= 0 ||
+      typeof heightCm !== 'number' ||
+      heightCm <= 0 ||
+      typeof weightKg !== 'number' ||
+      weightKg <= 0
+    ) {
+      return null;
+    }
     return calculateTDEEFromMetrics(
       sex,
-      Math.max(12, age || 25),
-      Math.max(50, heightCm || 178),
-      Math.max(25, weightKg || 70),
+      age,
+      heightCm,
+      weightKg,
       activity,
       parsedBodyFat && parsedBodyFat > 3 && parsedBodyFat < 60 ? parsedBodyFat : undefined
     );
   }, [sex, age, heightCm, weightKg, activity, parsedBodyFat]);
 
-  const currentGoalPreset: GoalMacroPreset = tdeeResult.presets[selectedGoal];
-  const currentBreakdown: MacroBreakdown = currentGoalPreset.variations[selectedVariation];
+  const currentGoalPreset: GoalMacroPreset | undefined = tdeeResult ? tdeeResult.presets[selectedGoal] : undefined;
+  const currentBreakdown: MacroBreakdown | undefined = currentGoalPreset ? currentGoalPreset.variations[selectedVariation] : undefined;
 
   const handlePromptSignUp = () => {
     if (onSignUpWithStats) {
       onSignUpWithStats({
-        sex,
-        age,
-        heightCm,
-        weightKg,
+        sex: sex ?? undefined,
+        age: typeof age === 'number' ? age : undefined,
+        heightCm: typeof heightCm === 'number' ? heightCm : undefined,
+        weightKg: typeof weightKg === 'number' ? weightKg : undefined,
         bodyFat: parsedBodyFat,
-        activity,
+        activity: activity || undefined,
       });
     }
   };
@@ -270,8 +301,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                   min="12"
                   max="110"
                   placeholder="e.g. 25"
-                  value={age || ''}
-                  onChange={(e) => setAge(parseInt(e.target.value) || 0)}
+                  value={age}
+                  onChange={(e) => setAge(e.target.value === '' ? '' : parseInt(e.target.value) || '')}
                   className="input-field"
                 />
               </div>
@@ -306,8 +337,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                       min="3"
                       max="8"
                       placeholder="5"
-                      value={feet || ''}
-                      onChange={(e) => handleHeightImperialChange(parseInt(e.target.value) || 0, inches)}
+                      value={feet}
+                      onChange={(e) => handleHeightImperialChange(e.target.value === '' ? '' : parseInt(e.target.value) || 0, inches)}
                       className="input-field"
                       style={{ paddingRight: '26px' }}
                     />
@@ -319,8 +350,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                       min="0"
                       max="11"
                       placeholder="10"
-                      value={inches || ''}
-                      onChange={(e) => handleHeightImperialChange(feet, parseInt(e.target.value) || 0)}
+                      value={inches}
+                      onChange={(e) => handleHeightImperialChange(feet, e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
                       className="input-field"
                       style={{ paddingRight: '26px' }}
                     />
@@ -334,8 +365,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                     min="90"
                     max="250"
                     placeholder="178"
-                    value={heightCm || ''}
-                    onChange={(e) => handleHeightMetricChange(parseInt(e.target.value) || 0)}
+                    value={heightCm}
+                    onChange={(e) => handleHeightMetricChange(e.target.value === '' ? '' : parseInt(e.target.value) || '')}
                     className="input-field"
                     style={{ paddingRight: '32px' }}
                   />
@@ -357,8 +388,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                     min="50"
                     max="800"
                     placeholder="172"
-                    value={weightLbs || ''}
-                    onChange={(e) => handleWeightImperialChange(parseFloat(e.target.value) || 0)}
+                    value={weightLbs}
+                    onChange={(e) => handleWeightImperialChange(e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
                     className="input-field"
                     style={{ paddingRight: '32px' }}
                   />
@@ -372,8 +403,8 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                     min="25"
                     max="350"
                     placeholder="78"
-                    value={weightKg || ''}
-                    onChange={(e) => handleWeightMetricChange(parseFloat(e.target.value) || 0)}
+                    value={weightKg}
+                    onChange={(e) => handleWeightMetricChange(e.target.value === '' ? '' : parseFloat(e.target.value) || '')}
                     className="input-field"
                     style={{ paddingRight: '32px' }}
                   />
@@ -391,8 +422,9 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                 value={activity}
                 onChange={(e) => setActivity(e.target.value as ActivityLevel)}
                 className="input-field"
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', color: activity ? 'var(--text-main)' : 'var(--text-muted)' }}
               >
+                <option value="" disabled>Select activity level...</option>
                 <option value="sedentary">Sedentary (1.2x) — Little/no exercise</option>
                 <option value="lightly_active">Lightly Active (1.375x) — 1 to 3 days/wk</option>
                 <option value="moderately_active">Moderately Active (1.55x) — 3 to 5 days/wk</option>
@@ -499,18 +531,20 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               style={{
                 padding: '8px 12px',
                 borderRadius: 'var(--radius-md)',
-                background: 'rgba(59, 130, 246, 0.06)',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
+                background: !tdeeResult ? 'rgba(245, 158, 11, 0.08)' : 'rgba(59, 130, 246, 0.06)',
+                border: !tdeeResult ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(59, 130, 246, 0.2)',
                 fontSize: '11px',
-                color: 'var(--text-secondary)',
+                color: !tdeeResult ? '#d97706' : 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              <Sparkles size={14} style={{ color: 'var(--macro-protein)', flexShrink: 0 }} />
+              <Sparkles size={14} style={{ color: !tdeeResult ? '#d97706' : 'var(--macro-protein)', flexShrink: 0 }} />
               <span>
-                {tdeeResult.formulaUsed === 'katch_mcardle'
+                {!tdeeResult
+                  ? '👉 Enter your details above to calculate your exact BMR and daily calorie burn.'
+                  : tdeeResult.formulaUsed === 'katch_mcardle'
                   ? '⚡ Katch-McArdle Formula active (calibrated with Lean Body Mass).'
                   : '✨ Mifflin-St Jeor Formula active (standard metabolic baseline).'}
               </span>
@@ -530,7 +564,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                 <Activity size={16} style={{ color: 'var(--macro-protein)' }} />
               </div>
               <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)' }}>
-                {tdeeResult.bmr} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>
+                {tdeeResult ? tdeeResult.bmr : '—'} {tdeeResult && <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>}
               </div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 Calories burned at complete rest
@@ -544,15 +578,15 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                 </span>
                 <Flame size={18} style={{ color: 'var(--color-accent)' }} />
               </div>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-accent)' }}>
-                {tdeeResult.tdee} <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>
+              <div style={{ fontSize: '28px', fontWeight: '800', color: tdeeResult ? 'var(--color-accent)' : 'var(--text-muted)' }}>
+                {tdeeResult ? tdeeResult.tdee : '—'} {tdeeResult && <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '400' }}>kcal</span>}
               </div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 Total daily calories to maintain weight
               </div>
             </div>
 
-            {tdeeResult.leanBodyMassKg && (
+            {tdeeResult?.leanBodyMassKg && (
               <div className="glass-card" style={{ padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
@@ -652,82 +686,129 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
             </div>
 
             {/* Target Breakdown Box */}
-            <div
-              style={{
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--border-light)',
-                borderRadius: 'var(--radius-md)',
-                padding: '16px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                <div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Daily Calorie Goal</span>
-                  <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>
-                    {currentBreakdown.calories} <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-muted)' }}>kcal</span>
+            {currentBreakdown ? (
+              <div
+                style={{
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Daily Calorie Goal</span>
+                    <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)' }}>
+                      {currentBreakdown.calories} <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-muted)' }}>kcal</span>
+                    </div>
+                  </div>
+                  <div className="badge">
+                    {selectedGoal.toUpperCase()} • {selectedVariation === 'optimal' ? 'BALANCED' : selectedVariation === 'highCarb' ? 'HIGH CARB' : 'HIGH FAT'}
                   </div>
                 </div>
-                <div className="badge">
-                  {selectedGoal.toUpperCase()} • {selectedVariation === 'optimal' ? 'BALANCED' : selectedVariation === 'highCarb' ? 'HIGH CARB' : 'HIGH FAT'}
+
+                {/* Macro Proportion Bar */}
+                <div style={{ height: '8px', width: '100%', display: 'flex', borderRadius: 'var(--radius-full)', overflow: 'hidden', marginBottom: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.05) inset' }}>
+                  <div style={{ width: `${currentBreakdown.proteinPercentage}%`, background: 'var(--macro-protein)' }} title={`Protein: ${currentBreakdown.proteinPercentage}%`} />
+                  <div style={{ width: `${currentBreakdown.carbPercentage}%`, background: 'var(--macro-carbs)' }} title={`Carbs: ${currentBreakdown.carbPercentage}%`} />
+                  <div style={{ width: `${currentBreakdown.fatPercentage}%`, background: 'var(--macro-fats)' }} title={`Fats: ${currentBreakdown.fatPercentage}%`} />
+                </div>
+
+                {/* 3 Macro Cards with Exact User Palette Colors */}
+                <div className="macro-cards-grid">
+                  <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(59, 130, 246, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--macro-protein)', fontWeight: '700', textTransform: 'uppercase' }}>
+                      Protein ({currentBreakdown.proteinPercentage}%)
+                    </span>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
+                      {currentBreakdown.proteinGrams}g
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                      {currentBreakdown.proteinGrams * 4} kcal
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(245, 158, 11, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--macro-carbs)', fontWeight: '700', textTransform: 'uppercase' }}>
+                      Carbs ({currentBreakdown.carbPercentage}%)
+                    </span>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
+                      {currentBreakdown.carbGrams}g
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                      {currentBreakdown.carbGrams * 4} kcal
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(236, 72, 153, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--macro-fats)', fontWeight: '700', textTransform: 'uppercase' }}>
+                      Fats ({currentBreakdown.fatPercentage}%)
+                    </span>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
+                      {currentBreakdown.fatGrams}g
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                      {currentBreakdown.fatGrams * 9} kcal
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Macro Proportion Bar */}
-              <div style={{ height: '8px', width: '100%', display: 'flex', borderRadius: 'var(--radius-full)', overflow: 'hidden', marginBottom: '14px', boxShadow: '0 1px 2px rgba(0,0,0,0.05) inset' }}>
-                <div style={{ width: `${currentBreakdown.proteinPercentage}%`, background: 'var(--macro-protein)' }} title={`Protein: ${currentBreakdown.proteinPercentage}%`} />
-                <div style={{ width: `${currentBreakdown.carbPercentage}%`, background: 'var(--macro-carbs)' }} title={`Carbs: ${currentBreakdown.carbPercentage}%`} />
-                <div style={{ width: `${currentBreakdown.fatPercentage}%`, background: 'var(--macro-fats)' }} title={`Fats: ${currentBreakdown.fatPercentage}%`} />
+            ) : (
+              <div
+                style={{
+                  background: 'var(--bg-primary)',
+                  border: '1px dashed var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '24px 16px',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <Activity size={24} style={{ color: 'var(--color-accent)', opacity: 0.8 }} />
+                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>
+                  Enter Your Metrics to View Macro Targets
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '340px', margin: 0 }}>
+                  Fill out your details on the left to compute your exact calorie target and macro ratios.
+                </p>
               </div>
-
-              {/* 3 Macro Cards with Exact User Palette Colors */}
-              <div className="macro-cards-grid">
-                <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(59, 130, 246, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
-                  <span style={{ fontSize: '10px', color: 'var(--macro-protein)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    Protein ({currentBreakdown.proteinPercentage}%)
-                  </span>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
-                    {currentBreakdown.proteinGrams}g
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                    {currentBreakdown.proteinGrams * 4} kcal
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(245, 158, 11, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
-                  <span style={{ fontSize: '10px', color: 'var(--macro-carbs)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    Carbs ({currentBreakdown.carbPercentage}%)
-                  </span>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
-                    {currentBreakdown.carbGrams}g
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                    {currentBreakdown.carbGrams * 4} kcal
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(236, 72, 153, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
-                  <span style={{ fontSize: '10px', color: 'var(--macro-fats)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    Fats ({currentBreakdown.fatPercentage}%)
-                  </span>
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
-                    {currentBreakdown.fatGrams}g
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                    {currentBreakdown.fatGrams * 9} kcal
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Real-time Weight Forecast Card (4/8/12 weeks + Target Goal Estimator) */}
-          <WeightForecastCard
-            currentWeightKg={weightKg}
-            tdee={tdeeResult.tdee}
-            calorieTarget={currentBreakdown.calories}
-            goal={selectedGoal}
-            unitPreference={unitPreference}
-          />
+          {tdeeResult && currentBreakdown && typeof weightKg === 'number' ? (
+            <WeightForecastCard
+              currentWeightKg={weightKg}
+              tdee={tdeeResult.tdee}
+              calorieTarget={currentBreakdown.calories}
+              goal={selectedGoal}
+              unitPreference={unitPreference}
+            />
+          ) : (
+            <div
+              className="glass-card responsive-card-padding"
+              style={{
+                textAlign: 'center',
+                padding: '24px 16px',
+                border: '1px dashed var(--border-light)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Target size={24} style={{ color: 'var(--text-muted)', opacity: 0.7 }} />
+              <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)' }}>
+                Weight Timeline Forecast
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '340px', margin: 0 }}>
+                Enter your metrics above to unlock 4, 8, and 12-week weight progression milestones.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
