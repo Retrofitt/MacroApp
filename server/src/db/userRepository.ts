@@ -1,5 +1,5 @@
 import { d1 } from './d1.js';
-import { runMigrations } from './migrations.js';
+import { ensureDatabaseSchema } from './schema.js';
 import { User, UserProfile, BiologicalSex, ActivityLevel, UnitPreference } from '../types/index.js';
 
 // Local development in-memory fallback maps if D1 is not configured
@@ -52,7 +52,7 @@ const mapProfileRow = (row: D1ProfileRow): UserProfile => ({
 
 export const userRepository = {
   async ensureSchema(force: boolean = false): Promise<void> {
-    await runMigrations(force);
+    await ensureDatabaseSchema(force);
   },
 
   async findByEmail(email: string): Promise<User | null> {
