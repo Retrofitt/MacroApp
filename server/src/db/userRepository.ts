@@ -225,7 +225,7 @@ export const userRepository = {
       const rows = await d1.query<D1ProfileRow>(
         `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
                 activity_level, unit_preference, theme_preference, selected_goal,
-                target_goal_weight, is_setup_complete, updated_at
+                target_goal_weight, privacy_policy_accepted, terms_accepted, is_setup_complete, updated_at
          FROM user_profiles WHERE user_id = ? LIMIT 1;`,
         [userId]
       );
@@ -236,7 +236,7 @@ export const userRepository = {
         const rows = await d1.query<D1ProfileRow>(
           `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
                   activity_level, unit_preference, theme_preference, selected_goal,
-                  target_goal_weight, is_setup_complete, updated_at
+                  target_goal_weight, privacy_policy_accepted, terms_accepted, is_setup_complete, updated_at
            FROM user_profiles WHERE user_id = ? LIMIT 1;`,
           [userId]
         );
