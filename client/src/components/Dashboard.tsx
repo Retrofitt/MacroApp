@@ -103,7 +103,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const needsLegalConsent = Boolean(
-    profile && (!profile.privacyPolicyAccepted || !profile.termsAccepted)
+    user && profile && (!profile.privacyPolicyAccepted || !profile.termsAccepted)
   );
 
   return (
