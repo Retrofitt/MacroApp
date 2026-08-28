@@ -98,4 +98,5 @@ A modern, mobile-first full-stack TypeScript web application engineered for prec
 ---
 
 ## 📄 License
-MIT License. Built by [Retrofitt](https://github.com/Retrofitt).
+MIT License. Built by [Rafael Mendoza](https://portfolio.ramendev.io).
+
