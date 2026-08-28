@@ -96,21 +96,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       >
         <button
           onClick={onClose}
+          aria-label="Close"
+          className="modal-close-icon"
           style={{
             position: 'absolute',
             top: '18px',
             right: '18px',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            padding: '4px',
-            borderRadius: '6px',
-            display: 'flex',
           }}
           title="Close"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Modal Header */}
