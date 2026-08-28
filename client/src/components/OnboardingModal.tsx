@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type {
   UserProfile,
   BiologicalSex,
@@ -157,7 +158,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop-fixed"
       onClick={(e) => {
@@ -522,6 +523,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

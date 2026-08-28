@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { UserProfile, BiologicalSex, ActivityLevel, UnitPreference } from '../types/user';
 import { cmToFeetInches, feetInchesToCm, kgToLbs, lbsToKg, inchesToCm } from '../utils/units';
 import { calculateNavyBodyFat } from '../utils/tdeeCalculator';
@@ -126,7 +127,7 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop-fixed"
       onClick={(e) => {
@@ -493,6 +494,7 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
