@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { UserProfile, BiologicalSex, ActivityLevel, UnitPreference } from '../types/user';
-import { cmToFeetInches, feetInchesToCm, kgToLbs, lbsToKg } from '../utils/units';
-import { X, UserCheck, Sparkles, Loader2 } from 'lucide-react';
+import { cmToFeetInches, feetInchesToCm, kgToLbs, lbsToKg, inchesToCm } from '../utils/units';
+import { calculateNavyBodyFat } from '../utils/tdeeCalculator';
+import { X, UserCheck, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ProfileStatsModalProps {
   isOpen: boolean;
@@ -26,6 +27,12 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
   const [activity, setActivity] = useState<ActivityLevel>('moderately_active');
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
+  // US Navy Tape Measure Helper state
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+  const [neckCircumference, setNeckCircumference] = useState<string>('');
+  const [waistCircumference, setWaistCircumference] = useState<string>('');
+  const [hipCircumference, setHipCircumference] = useState<string>('');
+
   const [feet, setFeet] = useState<number>(5);
   const [inches, setInches] = useState<number>(10);
   const [weightLbs, setWeightLbs] = useState<number>(172);
@@ -49,27 +56,56 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
   if (!isOpen) return null;
 
   const handleHeightImperialChange = (newFeet: number, newInches: number) => {
-    setFeet(newFeet);
-    setInches(newInches);
-    setHeightCm(Math.round(feetInchesToCm(newFeet, newInches)));
+    const validFeet = isNaN(newFeet) ? 0 : newFeet;
+    const validInches = isNaN(newInches) ? 0 : newInches;
+    setFeet(validFeet);
+    setInches(validInches);
+    setHeightCm(Math.round(feetInchesToCm(validFeet, validInches)));
   };
 
   const handleWeightImperialChange = (lbs: number) => {
-    setWeightLbs(lbs);
-    setWeightKg(Number(lbsToKg(lbs).toFixed(1)));
+    const validLbs = isNaN(lbs) ? 0 : lbs;
+    setWeightLbs(validLbs);
+    setWeightKg(Number(lbsToKg(validLbs).toFixed(1)));
   };
 
   const handleHeightMetricChange = (cm: number) => {
-    setHeightCm(cm);
-    const fi = cmToFeetInches(cm);
+    const validCm = isNaN(cm) ? 0 : cm;
+    setHeightCm(validCm);
+    const fi = cmToFeetInches(validCm);
     setFeet(fi.feet);
     setInches(fi.inches);
   };
 
   const handleWeightMetricChange = (kg: number) => {
-    setWeightKg(kg);
-    setWeightLbs(Math.round(kgToLbs(kg)));
+    const validKg = isNaN(kg) ? 0 : kg;
+    setWeightKg(validKg);
+    setWeightLbs(Math.round(kgToLbs(validKg)));
   };
+
+  const handleAutoCalculateBodyFat = (
+    neckVal: string,
+    waistVal: string,
+    hipVal: string
+  ) => {
+    const n = parseFloat(neckVal);
+    const w = parseFloat(waistVal);
+    const h = parseFloat(hipVal);
+
+    if (!n || !w || (sex === 'female' && !h)) return;
+
+    const neckCm = unitPreference === 'imperial' ? inchesToCm(n) : n;
+    const waistCm = unitPreference === 'imperial' ? inchesToCm(w) : w;
+    const hipCm = sex === 'female' ? (unitPreference === 'imperial' ? inchesToCm(h) : h) : undefined;
+
+    const estimatedBF = calculateNavyBodyFat(sex, heightCm, waistCm, neckCm, hipCm);
+    if (estimatedBF !== null) {
+      setBodyFat(String(estimatedBF));
+    }
+  };
+
+  const parsedBodyFat = bodyFat ? parseFloat(bodyFat) : undefined;
+  const isKatchActive = Boolean(parsedBodyFat && parsedBodyFat > 3 && parsedBodyFat < 60);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,10 +113,10 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
     try {
       await onSave({
         biologicalSex: sex,
-        age,
-        heightCm,
-        weightKg,
-        bodyFatPercentage: bodyFat ? parseFloat(bodyFat) : undefined,
+        age: age || 25,
+        heightCm: heightCm || 178,
+        weightKg: weightKg || 70,
+        bodyFatPercentage: parsedBodyFat,
         activityLevel: activity,
         unitPreference,
       });
@@ -178,16 +214,17 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
-                Age
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                Age (years)
               </label>
               <input
                 type="number"
                 min="12"
                 max="110"
-                value={age}
+                placeholder="25"
+                value={age || ''}
                 onChange={(e) => setAge(parseInt(e.target.value) || 0)}
                 className="input-field"
                 required
@@ -195,15 +232,15 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
                 Body Fat % (Optional)
               </label>
               <input
                 type="number"
-                step="0.1"
+                step="0.5"
                 min="3"
                 max="60"
-                placeholder="e.g. 15 (Enables Katch-McArdle)"
+                placeholder="e.g. 15"
                 value={bodyFat}
                 onChange={(e) => setBodyFat(e.target.value)}
                 className="input-field"
@@ -211,70 +248,186 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          {/* US Navy Body Fat Tape Helper Toggle */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-accent)',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '2px 0',
+              }}
+            >
+              {showAdvanced ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              <span>{showAdvanced ? 'Hide Tape Calculator' : '+ Calculate Body Fat % (US Navy Tape)'}</span>
+            </button>
+
+            {showAdvanced && (
+              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  Measure your neck & waist to estimate your body fat % (US Navy equation):
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: sex === 'female' ? '1fr 1fr 1fr' : '1fr 1fr', gap: '6px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                      Neck {unitPreference === 'imperial' ? '(in)' : '(cm)'}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      placeholder={unitPreference === 'imperial' ? '15.5' : '39'}
+                      value={neckCircumference}
+                      onChange={(e) => {
+                        setNeckCircumference(e.target.value);
+                        handleAutoCalculateBodyFat(e.target.value, waistCircumference, hipCircumference);
+                      }}
+                      className="input-field"
+                      style={{ padding: '6px 8px', fontSize: '12px' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                      Waist {unitPreference === 'imperial' ? '(in)' : '(cm)'}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      placeholder={unitPreference === 'imperial' ? '33.0' : '84'}
+                      value={waistCircumference}
+                      onChange={(e) => {
+                        setWaistCircumference(e.target.value);
+                        handleAutoCalculateBodyFat(neckCircumference, e.target.value, hipCircumference);
+                      }}
+                      className="input-field"
+                      style={{ padding: '6px 8px', fontSize: '12px' }}
+                    />
+                  </div>
+
+                  {sex === 'female' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '10px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                        Hips {unitPreference === 'imperial' ? '(in)' : '(cm)'}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        placeholder={unitPreference === 'imperial' ? '36.0' : '91'}
+                        value={hipCircumference}
+                        onChange={(e) => {
+                          setHipCircumference(e.target.value);
+                          handleAutoCalculateBodyFat(neckCircumference, waistCircumference, e.target.value);
+                        }}
+                        className="input-field"
+                        style={{ padding: '6px 8px', fontSize: '12px' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
-                Height {unitPreference === 'imperial' ? '(Feet & Inches)' : '(cm)'}
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+                Height {unitPreference === 'imperial' ? '(ft & in)' : '(cm)'}
               </label>
               {unitPreference === 'imperial' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <input
-                    type="number"
-                    min="3"
-                    max="8"
-                    placeholder="Ft"
-                    value={feet}
-                    onChange={(e) => handleHeightImperialChange(parseInt(e.target.value) || 0, inches)}
-                    className="input-field"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    max="11"
-                    placeholder="In"
-                    value={inches}
-                    onChange={(e) => handleHeightImperialChange(feet, parseInt(e.target.value) || 0)}
-                    className="input-field"
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="number"
+                      min="3"
+                      max="8"
+                      placeholder="5"
+                      value={feet || ''}
+                      onChange={(e) => handleHeightImperialChange(parseInt(e.target.value) || 0, inches)}
+                      className="input-field"
+                      style={{ paddingRight: '22px' }}
+                    />
+                    <span style={{ position: 'absolute', right: '8px', top: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>ft</span>
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="number"
+                      min="0"
+                      max="11"
+                      placeholder="10"
+                      value={inches || ''}
+                      onChange={(e) => handleHeightImperialChange(feet, parseInt(e.target.value) || 0)}
+                      className="input-field"
+                      style={{ paddingRight: '22px' }}
+                    />
+                    <span style={{ position: 'absolute', right: '8px', top: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>in</span>
+                  </div>
                 </div>
               ) : (
-                <input
-                  type="number"
-                  min="90"
-                  max="250"
-                  value={heightCm}
-                  onChange={(e) => handleHeightMetricChange(parseInt(e.target.value) || 0)}
-                  className="input-field"
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="number"
+                    min="90"
+                    max="250"
+                    placeholder="178"
+                    value={heightCm || ''}
+                    onChange={(e) => handleHeightMetricChange(parseInt(e.target.value) || 0)}
+                    className="input-field"
+                    style={{ paddingRight: '32px' }}
+                  />
+                  <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>cm</span>
+                </div>
               )}
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
                 Weight {unitPreference === 'imperial' ? '(lbs)' : '(kg)'}
               </label>
               {unitPreference === 'imperial' ? (
-                <input
-                  type="number"
-                  step="0.5"
-                  value={weightLbs}
-                  onChange={(e) => handleWeightImperialChange(parseFloat(e.target.value) || 0)}
-                  className="input-field"
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="50"
+                    max="800"
+                    placeholder="172"
+                    value={weightLbs || ''}
+                    onChange={(e) => handleWeightImperialChange(parseFloat(e.target.value) || 0)}
+                    className="input-field"
+                    style={{ paddingRight: '32px' }}
+                  />
+                  <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>lbs</span>
+                </div>
               ) : (
-                <input
-                  type="number"
-                  step="0.1"
-                  value={weightKg}
-                  onChange={(e) => handleWeightMetricChange(parseFloat(e.target.value) || 0)}
-                  className="input-field"
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="25"
+                    max="350"
+                    placeholder="78"
+                    value={weightKg || ''}
+                    onChange={(e) => handleWeightMetricChange(parseFloat(e.target.value) || 0)}
+                    className="input-field"
+                    style={{ paddingRight: '32px' }}
+                  />
+                  <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>kg</span>
+                </div>
               )}
             </div>
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-secondary)' }}>
               Activity Level
             </label>
             <select
@@ -283,47 +436,58 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
               className="input-field"
               style={{ cursor: 'pointer' }}
             >
-              <option value="sedentary">Sedentary (1.2x) — Little to no formal exercise</option>
-              <option value="lightly_active">Lightly Active (1.375x) — 1 to 3 light sessions/week</option>
-              <option value="moderately_active">Moderately Active (1.55x) — 3 to 5 training sessions/week</option>
+              <option value="sedentary">Sedentary (1.2x) — Little or no exercise</option>
+              <option value="lightly_active">Lightly Active (1.375x) — 1 to 3 days/week</option>
+              <option value="moderately_active">Moderately Active (1.55x) — 3 to 5 training days/week</option>
               <option value="very_active">Very Active (1.725x) — 6 to 7 intense sessions/week</option>
-              <option value="extremely_active">Extremely Active (1.9x) — Daily intense lifting & physical job</option>
+              <option value="extremely_active">Extremely Active (1.9x) — Physical job & heavy lifting</option>
             </select>
           </div>
 
+          {/* Formula Status Callout */}
           <div
             style={{
-              padding: '12px 16px',
+              padding: '8px 12px',
               borderRadius: 'var(--radius-md)',
-              background: 'rgba(6, 182, 212, 0.08)',
-              border: '1px solid rgba(6, 182, 212, 0.2)',
-              fontSize: '12px',
+              background: 'rgba(59, 130, 246, 0.06)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              fontSize: '11px',
               color: 'var(--text-secondary)',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
+              gap: '6px',
             }}
           >
-            <Sparkles size={18} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
+            <Sparkles size={14} style={{ color: 'var(--macro-protein)', flexShrink: 0 }} />
             <span>
-              {bodyFat
-                ? 'Katch-McArdle formula enabled: Uses your Lean Body Mass for athlete-grade accuracy.'
-                : 'Mifflin-St Jeor formula enabled: Accurate standard baseline for general population.'}
+              {isKatchActive
+                ? '⚡ Katch-McArdle Formula active (calibrated with Lean Body Mass).'
+                : '✨ Mifflin-St Jeor Formula active (standard metabolic baseline).'}
             </span>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-            <button type="button" onClick={onClose} className="btn-ghost">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-ghost"
+              style={{ padding: '8px 16px', fontSize: '13px' }}
+            >
               Cancel
             </button>
-            <button type="submit" disabled={isSaving} className="btn-primary">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="btn-primary"
+              style={{ padding: '8px 18px', fontSize: '13px' }}
+            >
               {isSaving ? (
                 <>
-                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                  Saving...
+                  <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                  <span>Saving...</span>
                 </>
               ) : (
-                'Save & Calculate'
+                'Save Settings'
               )}
             </button>
           </div>

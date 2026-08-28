@@ -17,6 +17,9 @@ export const feetInchesToCm = (feet: number, inches: number): number => {
   return totalInches * 2.54;
 };
 
+export const inchesToCm = (inches: number): number => inches * 2.54;
+export const cmToInches = (cm: number): number => cm / 2.54;
+
 const MASS_TO_GRAMS: Record<FoodMassUnit, number> = {
   g: 1,
   kg: 1000,
