@@ -15,7 +15,7 @@ export interface UserProfile {
   age: number;
   heightCm: number;
   weightKg: number;
-  bodyFatPercentage?: number;
+  bodyFatPercentage?: number | null;
   activityLevel: ActivityLevel;
   unitPreference: UnitPreference;
   isSetupComplete?: boolean;

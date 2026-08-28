@@ -20,9 +20,9 @@ export const calculateBMR = (
   weightKg: number,
   heightCm: number,
   age: number,
-  bodyFatPercentage?: number
+  bodyFatPercentage?: number | null
 ): { bmr: number; formula: 'katch_mcardle' | 'mifflin_st_jeor'; leanBodyMassKg?: number } => {
-  if (bodyFatPercentage !== undefined && bodyFatPercentage > 3 && bodyFatPercentage < 60) {
+  if (bodyFatPercentage != null && bodyFatPercentage > 3 && bodyFatPercentage < 60) {
     const leanBodyMassKg = weightKg * (1 - bodyFatPercentage / 100);
     const bmr = 370 + 21.6 * leanBodyMassKg;
     return {

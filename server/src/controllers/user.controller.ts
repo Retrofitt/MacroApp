@@ -3,27 +3,13 @@ import { AuthenticatedRequest } from '../middleware/auth.middleware.js';
 import { updateProfileSchema } from '../schemas/user.schema.js';
 import { ApiResponse, TDEEResult, UserProfile } from '../types/index.js';
 import { calculateFullTDEE } from '../utils/tdee.js';
+import { userRepository } from '../db/userRepository.js';
 
-const profilesDb: Map<string, UserProfile> = new Map();
-
-const getDefaultProfile = (userId: string): UserProfile => ({
-  userId,
-  biologicalSex: 'male',
-  age: 25,
-  heightCm: 178,
-  weightKg: 78,
-  bodyFatPercentage: undefined,
-  activityLevel: 'moderately_active',
-  unitPreference: 'imperial',
-  isSetupComplete: false,
-  updatedAt: new Date(),
-});
-
-export const getProfile = (
+export const getProfile = async (
   req: AuthenticatedRequest,
   res: Response<ApiResponse<{ profile: UserProfile; tdeeResult: TDEEResult }>>,
   next: NextFunction
-): void => {
+): Promise<void> => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -31,10 +17,17 @@ export const getProfile = (
       return;
     }
 
-    let profile = profilesDb.get(userId);
+    let profile = await userRepository.getProfile(userId);
     if (!profile) {
-      profile = getDefaultProfile(userId);
-      profilesDb.set(userId, profile);
+      profile = await userRepository.upsertProfile(userId, {
+        biologicalSex: 'male',
+        age: 25,
+        heightCm: 178,
+        weightKg: 78,
+        activityLevel: 'moderately_active',
+        unitPreference: 'imperial',
+        isSetupComplete: false,
+      });
     }
 
     const tdeeResult = calculateFullTDEE(profile);
@@ -51,11 +44,11 @@ export const getProfile = (
   }
 };
 
-export const updateProfile = (
+export const updateProfile = async (
   req: AuthenticatedRequest,
   res: Response<ApiResponse<{ profile: UserProfile; tdeeResult: TDEEResult }>>,
   next: NextFunction
-): void => {
+): Promise<void> => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -63,18 +56,12 @@ export const updateProfile = (
       return;
     }
 
-    const existingProfile = profilesDb.get(userId) || getDefaultProfile(userId);
     const validatedData = updateProfileSchema.partial().parse(req.body);
 
-    const updatedProfile: UserProfile = {
-      ...existingProfile,
+    const updatedProfile = await userRepository.upsertProfile(userId, {
       ...validatedData,
-      bodyFatPercentage: validatedData.bodyFatPercentage ?? undefined,
       isSetupComplete: validatedData.isSetupComplete !== undefined ? validatedData.isSetupComplete : true,
-      updatedAt: new Date(),
-    };
-
-    profilesDb.set(userId, updatedProfile);
+    });
 
     const tdeeResult = calculateFullTDEE(updatedProfile);
 

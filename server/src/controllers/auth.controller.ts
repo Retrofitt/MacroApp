@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { registerSchema, loginSchema } from '../schemas/auth.schema.js';
 import { User, SafeUser, AuthTokenPayload, ApiResponse } from '../types/index.js';
 import { AuthenticatedRequest } from '../middleware/auth.middleware.js';
-
-import { SignOptions } from 'jsonwebtoken';
-
-const usersDb: Map<string, User> = new Map();
+import { userRepository } from '../db/userRepository.js';
 
 const sanitizeUser = (user: User): SafeUser => {
   const { passwordHash: _, ...safeUser } = user;
@@ -38,10 +35,8 @@ export const register = async (
   try {
     const validatedData = registerSchema.parse(req.body);
 
-    const emailExists = Array.from(usersDb.values()).some(
-      (u) => u.email.toLowerCase() === validatedData.email.toLowerCase()
-    );
-    if (emailExists) {
+    const existingEmail = await userRepository.findByEmail(validatedData.email);
+    if (existingEmail) {
       res.status(409).json({
         success: false,
         error: 'An account with this email address already exists.',
@@ -49,10 +44,8 @@ export const register = async (
       return;
     }
 
-    const usernameExists = Array.from(usersDb.values()).some(
-      (u) => u.username.toLowerCase() === validatedData.username.toLowerCase()
-    );
-    if (usernameExists) {
+    const existingUsername = await userRepository.findByUsername(validatedData.username);
+    if (existingUsername) {
       res.status(409).json({
         success: false,
         error: 'This username is already taken.',
@@ -63,16 +56,12 @@ export const register = async (
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(validatedData.password, salt);
 
-    const newUser: User = {
+    const newUser = await userRepository.createUser({
       id: `user_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       username: validatedData.username,
       email: validatedData.email.toLowerCase(),
       passwordHash,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    usersDb.set(newUser.id, newUser);
+    });
 
     const tokenPayload: AuthTokenPayload = {
       userId: newUser.id,
@@ -104,10 +93,7 @@ export const login = async (
   try {
     const validatedData = loginSchema.parse(req.body);
 
-    const user = Array.from(usersDb.values()).find(
-      (u) => u.email.toLowerCase() === validatedData.email.toLowerCase()
-    );
-
+    const user = await userRepository.findByEmail(validatedData.email);
     if (!user) {
       res.status(401).json({
         success: false,
@@ -165,31 +151,36 @@ export const logout = (
   });
 };
 
-export const getMe = (
+export const getMe = async (
   req: AuthenticatedRequest,
-  res: Response<ApiResponse<{ user: SafeUser }>>
-): void => {
-  if (!req.user) {
-    res.status(401).json({
-      success: false,
-      error: 'Not authenticated.',
-    });
-    return;
-  }
+  res: Response<ApiResponse<{ user: SafeUser }>>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated.',
+      });
+      return;
+    }
 
-  const user = usersDb.get(req.user.userId);
-  if (!user) {
-    res.status(404).json({
-      success: false,
-      error: 'User not found.',
-    });
-    return;
-  }
+    const user = await userRepository.findById(req.user.userId);
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found.',
+      });
+      return;
+    }
 
-  res.status(200).json({
-    success: true,
-    data: {
-      user: sanitizeUser(user),
-    },
-  });
+    res.status(200).json({
+      success: true,
+      data: {
+        user: sanitizeUser(user),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
