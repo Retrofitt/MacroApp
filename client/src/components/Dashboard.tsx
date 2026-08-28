@@ -73,6 +73,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (res.success && res.data) {
       setProfile(res.data.profile);
       setTdeeResult(res.data.tdeeResult);
+    } else {
+      throw new Error(res.error || 'Failed to update profile settings.');
     }
   };
 

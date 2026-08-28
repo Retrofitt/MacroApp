@@ -27,6 +27,7 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
   const [bodyFat, setBodyFat] = useState<string>('');
   const [activity, setActivity] = useState<ActivityLevel>('moderately_active');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // US Navy Tape Measure Helper state
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -51,8 +52,9 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
       setFeet(fi.feet);
       setInches(fi.inches);
       setWeightLbs(Math.round(kgToLbs(profile.weightKg)));
+      setSaveError(null);
     }
-  }, [profile]);
+  }, [profile, isOpen, unitPreference]);
 
   if (!isOpen) return null;
 
@@ -111,6 +113,7 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    setSaveError(null);
     try {
       await onSave({
         biologicalSex: sex,
@@ -122,6 +125,9 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
         unitPreference,
       });
       onClose();
+    } catch (err: unknown) {
+      console.error('Failed to save profile stats:', err);
+      setSaveError(err instanceof Error ? err.message : 'Failed to save settings. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -166,6 +172,23 @@ export const ProfileStatsModal: React.FC<ProfileStatsModalProps> = ({
             </p>
           </div>
         </div>
+
+        {saveError && (
+          <div
+            style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#ef4444',
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '13px',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}
+          >
+            {saveError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
