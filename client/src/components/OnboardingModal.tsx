@@ -8,7 +8,7 @@ import type {
 } from '../types/user';
 import { cmToFeetInches, feetInchesToCm, kgToLbs, lbsToKg, inchesToCm } from '../utils/units';
 import { calculateNavyBodyFat } from '../utils/tdeeCalculator';
-import { Sparkles, CheckCircle2, Loader2, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, CheckCircle2, Loader2, ArrowRight, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -32,13 +32,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   initialGuestMetrics,
   unitPreference,
 }) => {
-  const [sex, setSex] = useState<BiologicalSex>('male');
-  const [age, setAge] = useState<number>(25);
-  const [heightCm, setHeightCm] = useState<number>(178);
-  const [weightKg, setWeightKg] = useState<number>(78);
+  // Empty state by default
+  const [sex, setSex] = useState<BiologicalSex | null>(null);
+  const [age, setAge] = useState<number | ''>('');
+  const [heightCm, setHeightCm] = useState<number | ''>('');
+  const [weightKg, setWeightKg] = useState<number | ''>('');
   const [bodyFat, setBodyFat] = useState<string>('');
-  const [activity, setActivity] = useState<ActivityLevel>('moderately_active');
+  const [activity, setActivity] = useState<ActivityLevel | ''>('');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // US Navy Tape Measure Helper state
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
@@ -47,12 +49,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [hipCircumference, setHipCircumference] = useState<string>('');
 
   // Imperial helper state
-  const [feet, setFeet] = useState<number>(5);
-  const [inches, setInches] = useState<number>(10);
-  const [weightLbs, setWeightLbs] = useState<number>(172);
+  const [feet, setFeet] = useState<number | ''>('');
+  const [inches, setInches] = useState<number | ''>('');
+  const [weightLbs, setWeightLbs] = useState<number | ''>('');
 
   useEffect(() => {
-    // If guest metrics were saved right before registration, prioritize them
+    // Populate only if guest metrics or previously saved profile stats exist
     if (initialGuestMetrics) {
       if (initialGuestMetrics.sex) setSex(initialGuestMetrics.sex);
       if (initialGuestMetrics.age) setAge(initialGuestMetrics.age);
@@ -70,7 +72,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         setBodyFat(String(initialGuestMetrics.bodyFat));
       }
       if (initialGuestMetrics.activity) setActivity(initialGuestMetrics.activity);
-    } else if (initialProfile) {
+    } else if (initialProfile && initialProfile.isSetupComplete) {
       setSex(initialProfile.biologicalSex);
       setAge(initialProfile.age);
       setHeightCm(initialProfile.heightCm);
@@ -87,32 +89,46 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleHeightImperialChange = (newFeet: number, newInches: number) => {
-    const validFeet = isNaN(newFeet) ? 0 : newFeet;
-    const validInches = isNaN(newInches) ? 0 : newInches;
-    setFeet(validFeet);
-    setInches(validInches);
-    setHeightCm(Math.round(feetInchesToCm(validFeet, validInches)));
+  const handleHeightImperialChange = (newFeet: number | '', newInches: number | '') => {
+    setFeet(newFeet);
+    setInches(newInches);
+    if (newFeet !== '' || newInches !== '') {
+      const f = typeof newFeet === 'number' ? newFeet : 0;
+      const i = typeof newInches === 'number' ? newInches : 0;
+      setHeightCm(Math.round(feetInchesToCm(f, i)));
+    } else {
+      setHeightCm('');
+    }
   };
 
-  const handleWeightImperialChange = (lbs: number) => {
-    const validLbs = isNaN(lbs) ? 0 : lbs;
-    setWeightLbs(validLbs);
-    setWeightKg(Number(lbsToKg(validLbs).toFixed(1)));
+  const handleWeightImperialChange = (lbs: number | '') => {
+    setWeightLbs(lbs);
+    if (typeof lbs === 'number' && !isNaN(lbs) && lbs > 0) {
+      setWeightKg(Number(lbsToKg(lbs).toFixed(1)));
+    } else {
+      setWeightKg('');
+    }
   };
 
-  const handleHeightMetricChange = (cm: number) => {
-    const validCm = isNaN(cm) ? 0 : cm;
-    setHeightCm(validCm);
-    const fi = cmToFeetInches(validCm);
-    setFeet(fi.feet);
-    setInches(fi.inches);
+  const handleHeightMetricChange = (cm: number | '') => {
+    setHeightCm(cm);
+    if (typeof cm === 'number' && !isNaN(cm) && cm > 0) {
+      const fi = cmToFeetInches(cm);
+      setFeet(fi.feet);
+      setInches(fi.inches);
+    } else {
+      setFeet('');
+      setInches('');
+    }
   };
 
-  const handleWeightMetricChange = (kg: number) => {
-    const validKg = isNaN(kg) ? 0 : kg;
-    setWeightKg(validKg);
-    setWeightLbs(Math.round(kgToLbs(validKg)));
+  const handleWeightMetricChange = (kg: number | '') => {
+    setWeightKg(kg);
+    if (typeof kg === 'number' && !isNaN(kg) && kg > 0) {
+      setWeightLbs(Math.round(kgToLbs(kg)));
+    } else {
+      setWeightLbs('');
+    }
   };
 
   const handleAutoCalculateBodyFat = (
@@ -120,6 +136,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     waistVal: string,
     hipVal: string
   ) => {
+    if (!sex || typeof heightCm !== 'number' || heightCm <= 0) return;
+
     const n = parseFloat(neckVal);
     const w = parseFloat(waistVal);
     const h = parseFloat(hipVal);
@@ -141,15 +159,38 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    if (!sex) {
+      setValidationError('Please select your biological sex.');
+      return;
+    }
+    if (!age || age < 12) {
+      setValidationError('Please enter a valid age (12+).');
+      return;
+    }
+    if (!heightCm || heightCm <= 0) {
+      setValidationError('Please enter your height.');
+      return;
+    }
+    if (!weightKg || weightKg <= 0) {
+      setValidationError('Please enter your current weight.');
+      return;
+    }
+    if (!activity) {
+      setValidationError('Please select an activity level.');
+      return;
+    }
+
     setIsSaving(true);
     try {
       await onComplete({
         biologicalSex: sex,
-        age: age || 25,
-        heightCm: heightCm || 178,
-        weightKg: weightKg || 70,
+        age: Number(age),
+        heightCm: Number(heightCm),
+        weightKg: Number(weightKg),
         bodyFatPercentage: parsedBodyFat,
-        activityLevel: activity,
+        activityLevel: activity as ActivityLevel,
         unitPreference,
         isSetupComplete: true,
       });
@@ -203,6 +244,26 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </div>
         </div>
 
+        {validationError && (
+          <div
+            style={{
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#ef4444',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '14px',
+            }}
+          >
+            <AlertCircle size={15} />
+            <span>{validationError}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Sex Selection */}
           <div>
@@ -212,7 +273,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <button
                 type="button"
-                onClick={() => setSex('male')}
+                onClick={() => {
+                  setSex('male');
+                  setValidationError(null);
+                }}
                 style={{
                   padding: '10px',
                   borderRadius: 'var(--radius-md)',
@@ -229,7 +293,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setSex('female')}
+                onClick={() => {
+                  setSex('female');
+                  setValidationError(null);
+                }}
                 style={{
                   padding: '10px',
                   borderRadius: 'var(--radius-md)',
@@ -257,9 +324,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 type="number"
                 min="12"
                 max="110"
-                placeholder="25"
-                value={age || ''}
-                onChange={(e) => setAge(parseInt(e.target.value) || 0)}
+                placeholder="e.g. 25"
+                value={age}
+                onChange={(e) => {
+                  setAge(e.target.value === '' ? '' : parseInt(e.target.value) || 0);
+                  setValidationError(null);
+                }}
                 className="input-field"
                 required
               />
@@ -385,8 +455,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       min="3"
                       max="8"
                       placeholder="5"
-                      value={feet || ''}
-                      onChange={(e) => handleHeightImperialChange(parseInt(e.target.value) || 0, inches)}
+                      value={feet}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseInt(e.target.value) || 0;
+                        handleHeightImperialChange(val, inches);
+                        setValidationError(null);
+                      }}
                       className="input-field"
                       style={{ paddingRight: '22px' }}
                     />
@@ -398,8 +472,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       min="0"
                       max="11"
                       placeholder="10"
-                      value={inches || ''}
-                      onChange={(e) => handleHeightImperialChange(feet, parseInt(e.target.value) || 0)}
+                      value={inches}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseInt(e.target.value) || 0;
+                        handleHeightImperialChange(feet, val);
+                        setValidationError(null);
+                      }}
                       className="input-field"
                       style={{ paddingRight: '22px' }}
                     />
@@ -412,9 +490,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     type="number"
                     min="90"
                     max="250"
-                    placeholder="178"
-                    value={heightCm || ''}
-                    onChange={(e) => handleHeightMetricChange(parseInt(e.target.value) || 0)}
+                    placeholder="e.g. 178"
+                    value={heightCm}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : parseInt(e.target.value) || 0;
+                      handleHeightMetricChange(val);
+                      setValidationError(null);
+                    }}
                     className="input-field"
                     style={{ paddingRight: '32px' }}
                   />
@@ -434,9 +516,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     step="0.5"
                     min="50"
                     max="800"
-                    placeholder="172"
-                    value={weightLbs || ''}
-                    onChange={(e) => handleWeightImperialChange(parseFloat(e.target.value) || 0)}
+                    placeholder="e.g. 172"
+                    value={weightLbs}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : parseFloat(e.target.value) || 0;
+                      handleWeightImperialChange(val);
+                      setValidationError(null);
+                    }}
                     className="input-field"
                     style={{ paddingRight: '32px' }}
                   />
@@ -449,9 +535,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     step="0.1"
                     min="25"
                     max="350"
-                    placeholder="78"
-                    value={weightKg || ''}
-                    onChange={(e) => handleWeightMetricChange(parseFloat(e.target.value) || 0)}
+                    placeholder="e.g. 78"
+                    value={weightKg}
+                    onChange={(e) => {
+                      const val = e.target.value === '' ? '' : parseFloat(e.target.value) || 0;
+                      handleWeightMetricChange(val);
+                      setValidationError(null);
+                    }}
                     className="input-field"
                     style={{ paddingRight: '32px' }}
                   />
@@ -468,10 +558,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </label>
             <select
               value={activity}
-              onChange={(e) => setActivity(e.target.value as ActivityLevel)}
+              onChange={(e) => {
+                setActivity(e.target.value as ActivityLevel);
+                setValidationError(null);
+              }}
               className="input-field"
               style={{ cursor: 'pointer' }}
+              required
             >
+              <option value="" disabled>Select Activity Level...</option>
               <option value="sedentary">Sedentary (1.2x) — Little or no exercise</option>
               <option value="lightly_active">Lightly Active (1.375x) — 1 to 3 days/week</option>
               <option value="moderately_active">Moderately Active (1.55x) — 3 to 5 training days/week</option>

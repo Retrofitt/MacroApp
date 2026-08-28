@@ -56,6 +56,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         if (!result.success && result.error) {
           setErrorMessage(result.error);
         } else {
+          sessionStorage.setItem('just_signed_up', 'true');
           onSuccess?.();
           onClose();
         }

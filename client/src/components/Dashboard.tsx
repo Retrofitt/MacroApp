@@ -42,8 +42,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         if (res.data.profile.unitPreference) {
           onUnitToggle(res.data.profile.unitPreference);
         }
-        // Trigger onboarding if setup was left incomplete or user came with guest metrics
-        if (res.data.profile.isSetupComplete === false || guestMetricsHandover) {
+        // Trigger onboarding ONLY immediately following a new account registration
+        const isNewSignup = sessionStorage.getItem('just_signed_up') === 'true';
+        if (isNewSignup) {
+          sessionStorage.removeItem('just_signed_up');
           setShowOnboarding(true);
         }
       }
