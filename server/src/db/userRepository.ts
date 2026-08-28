@@ -1,11 +1,10 @@
 import { d1 } from './d1.js';
+import { runMigrations } from './migrations.js';
 import { User, UserProfile, BiologicalSex, ActivityLevel, UnitPreference } from '../types/index.js';
 
 // Local development in-memory fallback maps if D1 is not configured
 const localUsersDb: Map<string, User> = new Map();
 const localProfilesDb: Map<string, UserProfile> = new Map();
-
-let schemaInitialized = false;
 
 interface D1UserRow {
   id: string;
@@ -52,39 +51,8 @@ const mapProfileRow = (row: D1ProfileRow): UserProfile => ({
 });
 
 export const userRepository = {
-  async ensureSchema(): Promise<void> {
-    if (schemaInitialized || !d1.isConfigured()) return;
-    try {
-      await d1.execute(`
-        CREATE TABLE IF NOT EXISTS users (
-          id TEXT PRIMARY KEY,
-          email TEXT UNIQUE NOT NULL,
-          username TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL
-        );
-      `);
-
-      await d1.execute(`
-        CREATE TABLE IF NOT EXISTS user_profiles (
-          user_id TEXT PRIMARY KEY,
-          biological_sex TEXT NOT NULL DEFAULT 'male',
-          age INTEGER NOT NULL DEFAULT 25,
-          height_cm REAL NOT NULL DEFAULT 178,
-          weight_kg REAL NOT NULL DEFAULT 78,
-          body_fat_percentage REAL,
-          activity_level TEXT NOT NULL DEFAULT 'moderately_active',
-          unit_preference TEXT NOT NULL DEFAULT 'imperial',
-          is_setup_complete INTEGER NOT NULL DEFAULT 0,
-          updated_at TEXT NOT NULL
-        );
-      `);
-
-      schemaInitialized = true;
-    } catch (err) {
-      console.error('Failed to auto-initialize Cloudflare D1 schema:', err);
-    }
+  async ensureSchema(force: boolean = false): Promise<void> {
+    await runMigrations(force);
   },
 
   async findByEmail(email: string): Promise<User | null> {
@@ -104,8 +72,7 @@ export const userRepository = {
       return rows.length > 0 ? mapUserRow(rows[0]) : null;
     } catch (err: unknown) {
       if (err instanceof Error && err.message.includes('no such table')) {
-        schemaInitialized = false;
-        await this.ensureSchema();
+        await this.ensureSchema(true);
         const rows = await d1.query<D1UserRow>(
           'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1;',
           [email]
@@ -133,8 +100,7 @@ export const userRepository = {
       return rows.length > 0 ? mapUserRow(rows[0]) : null;
     } catch (err: unknown) {
       if (err instanceof Error && err.message.includes('no such table')) {
-        schemaInitialized = false;
-        await this.ensureSchema();
+        await this.ensureSchema(true);
         const rows = await d1.query<D1UserRow>(
           'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1;',
           [username]
@@ -160,8 +126,7 @@ export const userRepository = {
       return rows.length > 0 ? mapUserRow(rows[0]) : null;
     } catch (err: unknown) {
       if (err instanceof Error && err.message.includes('no such table')) {
-        schemaInitialized = false;
-        await this.ensureSchema();
+        await this.ensureSchema(true);
         const rows = await d1.query<D1UserRow>(
           'SELECT id, email, username, password_hash, created_at, updated_at FROM users WHERE id = ? LIMIT 1;',
           [id]
@@ -195,18 +160,38 @@ export const userRepository = {
 
     await this.ensureSchema();
 
-    await d1.execute(
-      `INSERT INTO users (id, email, username, password_hash, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?);`,
-      [
-        newUser.id,
-        newUser.email,
-        newUser.username,
-        newUser.passwordHash,
-        newUser.createdAt.toISOString(),
-        newUser.updatedAt.toISOString(),
-      ]
-    );
+    try {
+      await d1.execute(
+        `INSERT INTO users (id, email, username, password_hash, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?);`,
+        [
+          newUser.id,
+          newUser.email,
+          newUser.username,
+          newUser.passwordHash,
+          newUser.createdAt.toISOString(),
+          newUser.updatedAt.toISOString(),
+        ]
+      );
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('no such table')) {
+        await this.ensureSchema(true);
+        await d1.execute(
+          `INSERT INTO users (id, email, username, password_hash, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?);`,
+          [
+            newUser.id,
+            newUser.email,
+            newUser.username,
+            newUser.passwordHash,
+            newUser.createdAt.toISOString(),
+            newUser.updatedAt.toISOString(),
+          ]
+        );
+      } else {
+        throw err;
+      }
+    }
 
     return newUser;
   },
@@ -228,8 +213,7 @@ export const userRepository = {
       return rows.length > 0 ? mapProfileRow(rows[0]) : null;
     } catch (err: unknown) {
       if (err instanceof Error && err.message.includes('no such table')) {
-        schemaInitialized = false;
-        await this.ensureSchema();
+        await this.ensureSchema(true);
         const rows = await d1.query<D1ProfileRow>(
           `SELECT user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
                   activity_level, unit_preference, is_setup_complete, updated_at
@@ -275,34 +259,70 @@ export const userRepository = {
 
     await this.ensureSchema();
 
-    await d1.execute(
-      `INSERT INTO user_profiles (
-         user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
-         activity_level, unit_preference, is_setup_complete, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(user_id) DO UPDATE SET
-         biological_sex = excluded.biological_sex,
-         age = excluded.age,
-         height_cm = excluded.height_cm,
-         weight_kg = excluded.weight_kg,
-         body_fat_percentage = excluded.body_fat_percentage,
-         activity_level = excluded.activity_level,
-         unit_preference = excluded.unit_preference,
-         is_setup_complete = excluded.is_setup_complete,
-         updated_at = excluded.updated_at;`,
-      [
-        merged.userId,
-        merged.biologicalSex,
-        merged.age,
-        merged.heightCm,
-        merged.weightKg,
-        merged.bodyFatPercentage ?? null,
-        merged.activityLevel,
-        merged.unitPreference,
-        merged.isSetupComplete ? 1 : 0,
-        merged.updatedAt.toISOString(),
-      ]
-    );
+    try {
+      await d1.execute(
+        `INSERT INTO user_profiles (
+           user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
+           activity_level, unit_preference, is_setup_complete, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET
+           biological_sex = excluded.biological_sex,
+           age = excluded.age,
+           height_cm = excluded.height_cm,
+           weight_kg = excluded.weight_kg,
+           body_fat_percentage = excluded.body_fat_percentage,
+           activity_level = excluded.activity_level,
+           unit_preference = excluded.unit_preference,
+           is_setup_complete = excluded.is_setup_complete,
+           updated_at = excluded.updated_at;`,
+        [
+          merged.userId,
+          merged.biologicalSex,
+          merged.age,
+          merged.heightCm,
+          merged.weightKg,
+          merged.bodyFatPercentage ?? null,
+          merged.activityLevel,
+          merged.unitPreference,
+          merged.isSetupComplete ? 1 : 0,
+          merged.updatedAt.toISOString(),
+        ]
+      );
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message.includes('no such table')) {
+        await this.ensureSchema(true);
+        await d1.execute(
+          `INSERT INTO user_profiles (
+             user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
+             activity_level, unit_preference, is_setup_complete, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(user_id) DO UPDATE SET
+             biological_sex = excluded.biological_sex,
+             age = excluded.age,
+             height_cm = excluded.height_cm,
+             weight_kg = excluded.weight_kg,
+             body_fat_percentage = excluded.body_fat_percentage,
+             activity_level = excluded.activity_level,
+             unit_preference = excluded.unit_preference,
+             is_setup_complete = excluded.is_setup_complete,
+             updated_at = excluded.updated_at;`,
+          [
+            merged.userId,
+            merged.biologicalSex,
+            merged.age,
+            merged.heightCm,
+            merged.weightKg,
+            merged.bodyFatPercentage ?? null,
+            merged.activityLevel,
+            merged.unitPreference,
+            merged.isSetupComplete ? 1 : 0,
+            merged.updatedAt.toISOString(),
+          ]
+        );
+      } else {
+        throw err;
+      }
+    }
 
     return merged;
   },
