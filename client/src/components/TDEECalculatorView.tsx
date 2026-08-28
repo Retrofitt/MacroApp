@@ -211,25 +211,25 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
         {/* 2. Variation Selector Pills */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <button
+            type="button"
             onClick={() => setSelectedVariation('optimal')}
             className={`pill-btn ${selectedVariation === 'optimal' ? 'active' : ''}`}
-            style={{ fontSize: '12px' }}
           >
-            ⭐ Balanced
+            Balanced
           </button>
           <button
+            type="button"
             onClick={() => setSelectedVariation('highCarb')}
             className={`pill-btn ${selectedVariation === 'highCarb' ? 'active' : ''}`}
-            style={{ fontSize: '12px' }}
           >
-            ⚡ High-Carb
+            High Carb
           </button>
           <button
+            type="button"
             onClick={() => setSelectedVariation('highFat')}
             className={`pill-btn ${selectedVariation === 'highFat' ? 'active' : ''}`}
-            style={{ fontSize: '12px' }}
           >
-            🥑 High-Fat (Keto Lean)
+            High Fat
           </button>
         </div>
 
@@ -262,7 +262,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
                 borderColor: 'rgba(16, 185, 129, 0.2)',
               }}
             >
-              {selectedGoal} • {selectedVariation}
+              {selectedGoal} • {selectedVariation === 'optimal' ? 'Balanced' : selectedVariation === 'highCarb' ? 'High Carb' : 'High Fat'}
             </span>
           </div>
 
@@ -285,7 +285,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(59, 130, 246, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
               <span style={{ fontSize: '10px', color: 'var(--macro-protein)', fontWeight: '700', textTransform: 'uppercase' }}>
-                🍗 Protein ({currentBreakdown.proteinPercentage}%)
+                Protein ({currentBreakdown.proteinPercentage}%)
               </span>
               <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                 {currentBreakdown.proteinGrams}g
@@ -297,7 +297,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
 
             <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(245, 158, 11, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
               <span style={{ fontSize: '10px', color: 'var(--macro-carbs)', fontWeight: '700', textTransform: 'uppercase' }}>
-                🍚 Carbs ({currentBreakdown.carbPercentage}%)
+                Carbs ({currentBreakdown.carbPercentage}%)
               </span>
               <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                 {currentBreakdown.carbGrams}g
@@ -309,7 +309,7 @@ export const TDEECalculatorView: React.FC<TDEECalculatorViewProps> = ({
 
             <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(236, 72, 153, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
               <span style={{ fontSize: '10px', color: 'var(--macro-fats)', fontWeight: '700', textTransform: 'uppercase' }}>
-                🥑 Fats ({currentBreakdown.fatPercentage}%)
+                Fats ({currentBreakdown.fatPercentage}%)
               </span>
               <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                 {currentBreakdown.fatGrams}g

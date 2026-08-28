@@ -629,55 +629,25 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedVariation('optimal')}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  border: selectedVariation === 'optimal' ? '1.5px solid var(--color-accent)' : '1px solid var(--border-light)',
-                  background: selectedVariation === 'optimal' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
-                  color: selectedVariation === 'optimal' ? '#059669' : 'var(--text-secondary)',
-                  fontWeight: '600',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
+                className={`pill-btn ${selectedVariation === 'optimal' ? 'active' : ''}`}
               >
-                ⭐ Balanced
+                Balanced
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedVariation('highCarb')}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  border: selectedVariation === 'highCarb' ? '1.5px solid var(--macro-protein)' : '1px solid var(--border-light)',
-                  background: selectedVariation === 'highCarb' ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-surface)',
-                  color: selectedVariation === 'highCarb' ? '#2563eb' : 'var(--text-secondary)',
-                  fontWeight: '600',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
+                className={`pill-btn ${selectedVariation === 'highCarb' ? 'active' : ''}`}
               >
-                ⚡ High-Carb
+                High Carb
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedVariation('highFat')}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  border: selectedVariation === 'highFat' ? '1.5px solid var(--macro-fats)' : '1px solid var(--border-light)',
-                  background: selectedVariation === 'highFat' ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-surface)',
-                  color: selectedVariation === 'highFat' ? '#db2777' : 'var(--text-secondary)',
-                  fontWeight: '600',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
+                className={`pill-btn ${selectedVariation === 'highFat' ? 'active' : ''}`}
               >
-                🥑 High-Fat
+                High Fat
               </button>
             </div>
 
@@ -698,7 +668,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
                   </div>
                 </div>
                 <div className="badge">
-                  {selectedGoal.toUpperCase()} • {selectedVariation.toUpperCase()}
+                  {selectedGoal.toUpperCase()} • {selectedVariation === 'optimal' ? 'BALANCED' : selectedVariation === 'highCarb' ? 'HIGH CARB' : 'HIGH FAT'}
                 </div>
               </div>
 
@@ -713,7 +683,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
               <div className="macro-cards-grid">
                 <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(59, 130, 246, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
                   <span style={{ fontSize: '10px', color: 'var(--macro-protein)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    🥩 Protein ({currentBreakdown.proteinPercentage}%)
+                    Protein ({currentBreakdown.proteinPercentage}%)
                   </span>
                   <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                     {currentBreakdown.proteinGrams}g
@@ -725,7 +695,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
 
                 <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(245, 158, 11, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
                   <span style={{ fontSize: '10px', color: 'var(--macro-carbs)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    🍚 Carbs ({currentBreakdown.carbPercentage}%)
+                    Carbs ({currentBreakdown.carbPercentage}%)
                   </span>
                   <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                     {currentBreakdown.carbGrams}g
@@ -737,7 +707,7 @@ export const LiveTDEECalculator: React.FC<LiveTDEECalculatorProps> = ({
 
                 <div style={{ background: 'var(--bg-surface)', border: '1.5px solid rgba(236, 72, 153, 0.25)', padding: '10px 12px', borderRadius: 'var(--radius-md)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
                   <span style={{ fontSize: '10px', color: 'var(--macro-fats)', fontWeight: '700', textTransform: 'uppercase' }}>
-                    🥑 Fats ({currentBreakdown.fatPercentage}%)
+                    Fats ({currentBreakdown.fatPercentage}%)
                   </span>
                   <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginTop: '2px' }}>
                     {currentBreakdown.fatGrams}g
