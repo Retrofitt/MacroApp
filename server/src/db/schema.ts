@@ -27,6 +27,8 @@ export const SCHEMAS = {
       theme_preference TEXT NOT NULL DEFAULT 'light',
       selected_goal TEXT NOT NULL DEFAULT 'maintenance',
       target_goal_weight REAL,
+      privacy_policy_accepted INTEGER NOT NULL DEFAULT 0,
+      terms_accepted INTEGER NOT NULL DEFAULT 0,
       is_setup_complete INTEGER NOT NULL DEFAULT 0,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -38,6 +40,8 @@ export const SCHEMA_MIGRATIONS = [
   `ALTER TABLE user_profiles ADD COLUMN theme_preference TEXT NOT NULL DEFAULT 'light';`,
   `ALTER TABLE user_profiles ADD COLUMN selected_goal TEXT NOT NULL DEFAULT 'maintenance';`,
   `ALTER TABLE user_profiles ADD COLUMN target_goal_weight REAL;`,
+  `ALTER TABLE user_profiles ADD COLUMN privacy_policy_accepted INTEGER NOT NULL DEFAULT 0;`,
+  `ALTER TABLE user_profiles ADD COLUMN terms_accepted INTEGER NOT NULL DEFAULT 0;`,
 ];
 
 let isSchemaSynchronized = false;

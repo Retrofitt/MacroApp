@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ShieldCheck, FileText, Lock, Scale, HeartPulse, Check } from 'lucide-react';
+import { X, ShieldCheck, FileText, Lock, Scale, HeartPulse } from 'lucide-react';
 
 export type LegalTab = 'privacy' | 'terms';
 
@@ -326,11 +326,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="btn-primary"
+            className="btn-secondary"
             style={{ fontSize: '12px', padding: '8px 18px' }}
           >
-            <Check size={14} />
-            <span>I Understand</span>
+            <span>Close</span>
           </button>
         </div>
       </div>

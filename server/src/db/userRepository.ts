@@ -35,6 +35,8 @@ interface D1ProfileRow {
   theme_preference?: string;
   selected_goal?: string;
   target_goal_weight?: number | null;
+  privacy_policy_accepted?: number;
+  terms_accepted?: number;
   is_setup_complete: number;
   updated_at: string;
 }
@@ -60,6 +62,8 @@ const mapProfileRow = (row: D1ProfileRow): UserProfile => ({
   themePreference: (row.theme_preference as ThemePreference) || 'light',
   selectedGoal: (row.selected_goal as SelectedGoal) || 'maintenance',
   targetGoalWeight: row.target_goal_weight ?? undefined,
+  privacyPolicyAccepted: Boolean(row.privacy_policy_accepted),
+  termsAccepted: Boolean(row.terms_accepted),
   isSetupComplete: Boolean(row.is_setup_complete),
   updatedAt: new Date(row.updated_at),
 });
@@ -267,6 +271,14 @@ export const userRepository = {
         data.targetGoalWeight !== undefined
           ? data.targetGoalWeight
           : existing?.targetGoalWeight,
+      privacyPolicyAccepted:
+        data.privacyPolicyAccepted !== undefined
+          ? data.privacyPolicyAccepted
+          : existing?.privacyPolicyAccepted ?? false,
+      termsAccepted:
+        data.termsAccepted !== undefined
+          ? data.termsAccepted
+          : existing?.termsAccepted ?? false,
       isSetupComplete:
         data.isSetupComplete !== undefined
           ? data.isSetupComplete
@@ -286,8 +298,8 @@ export const userRepository = {
         `INSERT INTO user_profiles (
            user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
            activity_level, unit_preference, theme_preference, selected_goal,
-           target_goal_weight, is_setup_complete, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           target_goal_weight, privacy_policy_accepted, terms_accepted, is_setup_complete, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(user_id) DO UPDATE SET
            biological_sex = excluded.biological_sex,
            age = excluded.age,
@@ -299,6 +311,8 @@ export const userRepository = {
            theme_preference = excluded.theme_preference,
            selected_goal = excluded.selected_goal,
            target_goal_weight = excluded.target_goal_weight,
+           privacy_policy_accepted = excluded.privacy_policy_accepted,
+           terms_accepted = excluded.terms_accepted,
            is_setup_complete = excluded.is_setup_complete,
            updated_at = excluded.updated_at;`,
         [
@@ -313,6 +327,8 @@ export const userRepository = {
           merged.themePreference ?? 'light',
           merged.selectedGoal ?? 'maintenance',
           merged.targetGoalWeight ?? null,
+          merged.privacyPolicyAccepted ? 1 : 0,
+          merged.termsAccepted ? 1 : 0,
           merged.isSetupComplete ? 1 : 0,
           merged.updatedAt.toISOString(),
         ]
@@ -324,8 +340,8 @@ export const userRepository = {
           `INSERT INTO user_profiles (
              user_id, biological_sex, age, height_cm, weight_kg, body_fat_percentage,
              activity_level, unit_preference, theme_preference, selected_goal,
-             target_goal_weight, is_setup_complete, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             target_goal_weight, privacy_policy_accepted, terms_accepted, is_setup_complete, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(user_id) DO UPDATE SET
              biological_sex = excluded.biological_sex,
              age = excluded.age,
@@ -337,6 +353,8 @@ export const userRepository = {
              theme_preference = excluded.theme_preference,
              selected_goal = excluded.selected_goal,
              target_goal_weight = excluded.target_goal_weight,
+             privacy_policy_accepted = excluded.privacy_policy_accepted,
+             terms_accepted = excluded.terms_accepted,
              is_setup_complete = excluded.is_setup_complete,
              updated_at = excluded.updated_at;`,
           [
@@ -351,6 +369,8 @@ export const userRepository = {
             merged.themePreference ?? 'light',
             merged.selectedGoal ?? 'maintenance',
             merged.targetGoalWeight ?? null,
+            merged.privacyPolicyAccepted ? 1 : 0,
+            merged.termsAccepted ? 1 : 0,
             merged.isSetupComplete ? 1 : 0,
             merged.updatedAt.toISOString(),
           ]

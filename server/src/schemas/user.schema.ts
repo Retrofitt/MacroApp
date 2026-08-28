@@ -22,6 +22,8 @@ export const updateProfileSchema = z.object({
   themePreference: z.enum(['light', 'dark']).optional(),
   selectedGoal: z.enum(['cutting', 'maintenance', 'bulking']).optional(),
   targetGoalWeight: z.number().min(10).max(500).optional().nullable(),
+  privacyPolicyAccepted: z.boolean().optional(),
+  termsAccepted: z.boolean().optional(),
   isSetupComplete: z.boolean().optional(),
 });
 

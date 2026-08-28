@@ -23,6 +23,8 @@ export interface UserProfile {
   themePreference?: ThemePreference;
   selectedGoal?: SelectedGoal;
   targetGoalWeight?: number | null;
+  privacyPolicyAccepted?: boolean;
+  termsAccepted?: boolean;
   isSetupComplete?: boolean;
   updatedAt: string;
 }
